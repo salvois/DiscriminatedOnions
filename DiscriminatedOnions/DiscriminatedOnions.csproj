@@ -1,8 +1,19 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net5.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<Version>0.1.0</Version>
+		<Authors>Salvo Isaja</Authors>
+		<Company>Salvo Isaja</Company>
+		<Copyright>Copyright 2022  Salvatore Isaja</Copyright>
+		<PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+		<PackageProjectUrl>https://github.com/salvois/DiscriminatedOnions</PackageProjectUrl>
+		<Description>A stinky but tasty hack to emulate F#-like discriminated unions in C#</Description>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<None Include="../LICENSE.txt" Pack="true" PackagePath="$(PackageLicenseFile)" />
+	</ItemGroup>
 
 </Project>
