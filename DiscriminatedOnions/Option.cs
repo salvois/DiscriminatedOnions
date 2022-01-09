@@ -1,0 +1,107 @@
+﻿/*
+DiscriminatedOnions - A stinky but tasty hack to emulate F#-like discriminated unions in C#
+
+Copyright 2022 Salvatore ISAJA. All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice,
+this list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright notice,
+this list of conditions and the following disclaimer in the documentation
+and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED THE COPYRIGHT HOLDER ``AS IS'' AND ANY EXPRESS
+OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN
+NO EVENT SHALL THE COPYRIGHT HOLDER BE LIABLE FOR ANY DIRECT,
+INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+using System;
+
+namespace DiscriminatedOnions
+{
+    public abstract record Option<T>
+    {
+        public record None : Option<T>;
+        public record Some(T Value) : Option<T>;
+
+        public U Match<U>(Func<U> onNone, Func<T, U> onSome) =>
+            this switch
+            {
+                None => onNone(),
+                Some some => onSome(some.Value),
+                _ => throw new ArgumentOutOfRangeException()
+            };
+    }
+
+    public static class Option
+    {
+        public static Option<T> Some<T>(T value) => new Option<T>.Some(value);
+        public static Option<T> None<T>() => new Option<T>.None();
+
+        public static Option<U> Bind<T, U>(this Option<T> option, Func<T, Option<U>> binder) =>
+            option.Match(None<U>, binder);
+
+        public static bool Contains<T>(this Option<T> option, T value) =>
+            option.Match(() => false, v => Equals(v, value));
+
+        public static int Count<T>(this Option<T> option) =>
+            option.Match(() => 0, _ => 1);
+
+        public static T DefaultValue<T>(this Option<T> option, T value) =>
+            option.Match(() => value, v => v);
+
+        public static T DefaultWith<T>(this Option<T> option, Func<T> defThunk) =>
+            option.Match(defThunk, v => v);
+
+        public static bool Exists<T>(this Option<T> option, Func<T, bool> predicate) =>
+            option.Match(() => false, predicate);
+
+        public static Option<T> Filter<T>(this Option<T> option, Func<T, bool> predicate) =>
+            option.Match(() => option, v => predicate(v) ? option : None<T>());
+
+        public static Option<T> Flatten<T>(this Option<Option<T>> option) =>
+            option.Match(None<T>, v => v);
+
+        public static T Get<T>(this Option<T> option) =>
+            option.Match(() => throw new InvalidOperationException(), v => v);
+
+        public static bool IsNone<T>(this Option<T> option) =>
+            option.Match(() => true, _ => false);
+
+        public static bool IsSome<T>(this Option<T> option) =>
+            option.Match(() => false, _ => true);
+
+        public static void Iter<T>(this Option<T> option, Action<T> action) =>
+            option.Match(() => Unit.Value, v => { action(v); return Unit.Value; });
+
+        public static Option<U> Map<T, U>(this Option<T> option, Func<T, U> mapping) =>
+            option.Match(None<U>, v => Some(mapping(v)));
+
+        public static Option<T> OfNullable<T>(T? value) where T : struct =>
+            value.HasValue ? Some(value.Value) : None<T>();
+
+        public static Option<T> OfObj<T>(T? obj) where T : class =>
+            obj != null ? Some(obj) : None<T>();
+
+        public static Option<T> OrElse<T>(this Option<T> option, Option<T> ifNone) =>
+            option.Match(() => ifNone, _ => option);
+
+        public static Option<T> OrElseWith<T>(this Option<T> option, Func<Option<T>> ifNoneThunk) =>
+            option.Match(ifNoneThunk, _ => option);
+
+        public static T? ToNullable<T>(this Option<T> option) where T : struct =>
+            option.Match(() => (T?)null, v => v);
+
+        public static T? ToObj<T>(this Option<T> option) where T : class =>
+            option.Match(() => (T?)null, v => v);
+    }
+}
