@@ -49,6 +49,18 @@ public static class OptionTest
             .Should().Be(DummyValue);
 
     [Test]
+    public static void Equality_Some() => Option.Some("value").Should().Be(Option.Some("value"));
+
+    [Test]
+    public static void Equality_None() => Option.None<string>().Should().Be(Option.None<string>());
+
+    [Test]
+    public static void Inequality_Some_None() => Option.Some("value").Should().NotBe(Option.None<string>());
+
+    [Test]
+    public static void Inequality_Some() => Option.Some("value").Should().NotBe(Option.Some("anotherValue"));
+
+    [Test]
     public static void Bind_Some() =>
         Option.Some(GoodValue)
             .Bind(v => Option.Some(v + "Altered"))
@@ -70,6 +82,12 @@ public static class OptionTest
 
     [Test]
     public static void Contains_None() => Option.None<string>().Contains("value").Should().BeFalse();
+    
+    [Test]
+    public static void Count_Some() => Option.Some(GoodValue).Count().Should().Be(1);
+
+    [Test]
+    public static void Count_None() => Option.None<string>().Count().Should().Be(0);
 
     [Test]
     public static void DefaultValue_Some() => Option.Some("value").DefaultValue("defaultValue").Should().Be("value");

@@ -41,8 +41,8 @@ public static class RollYourOwnTest
         public U Match<U>(Func<double, double, U> onRectangle, Func<double, U> onCircle) =>
             this switch
             {
-                Rectangle r => onRectangle(r.Width, r.Height),
-                Circle c => onCircle(c.Radius),
+                Rectangle(var width, var height) => onRectangle(width, height),
+                Circle(var radius) => onCircle(radius),
                 _ => throw new ArgumentOutOfRangeException()
             };
     }
@@ -50,8 +50,8 @@ public static class RollYourOwnTest
     private static double ComputeAreaUsingSwitch(this Shape shape) =>
         shape switch
         {
-            Shape.Rectangle r => r.Width * r.Height,
-            Shape.Circle c => c.Radius * c.Radius * Math.PI,
+            Shape.Rectangle(var width, var height) => width * height,
+            Shape.Circle(var radius) => radius * radius * Math.PI,
             _ => throw new ArgumentOutOfRangeException() // This is one point where this approach is inferior to real discriminated unions
         };
 

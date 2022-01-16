@@ -32,9 +32,8 @@ using NUnit.Framework;
 namespace DiscriminatedOnions.Tests;
 
 [TestFixture, Explicit]
-public static class SingleCaseUnionTest
+public static class SingleCaseUnionBenchmark
 {
-
     private record CustomerId(int Value);
 
     private readonly record struct StructCustomerId(int Value);

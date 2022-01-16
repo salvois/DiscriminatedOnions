@@ -30,14 +30,24 @@ namespace DiscriminatedOnions
 {
     public abstract record Option<T>
     {
-        public record None : Option<T>;
-        public record Some(T Value) : Option<T>;
+        public record None : Option<T>
+        {
+            internal static readonly Option<T> Value = new None();
+            private None() { }
+        }
+
+        public record Some : Option<T>
+        {
+            private T Value { get; }
+            internal Some(T value) => Value = value;
+            public void Deconstruct(out T value) => value = Value;
+        }
 
         public U Match<U>(Func<U> onNone, Func<T, U> onSome) =>
             this switch
             {
                 None => onNone(),
-                Some some => onSome(some.Value),
+                Some(var v) => onSome(v),
                 _ => throw new ArgumentOutOfRangeException()
             };
     }
@@ -45,7 +55,7 @@ namespace DiscriminatedOnions
     public static class Option
     {
         public static Option<T> Some<T>(T value) => new Option<T>.Some(value);
-        public static Option<T> None<T>() => new Option<T>.None();
+        public static Option<T> None<T>() => Option<T>.None.Value;
 
         public static Option<U> Bind<T, U>(this Option<T> option, Func<T, Option<U>> binder) =>
             option.Match(None<U>, binder);
@@ -72,13 +82,13 @@ namespace DiscriminatedOnions
             option.Match(None<T>, v => v);
 
         public static T Get<T>(this Option<T> option) =>
-            option.Match(() => throw new InvalidOperationException(), v => v);
+            option is Option<T>.Some(var v) ? v : throw new InvalidOperationException();
 
         public static bool IsNone<T>(this Option<T> option) =>
-            option.Match(() => true, _ => false);
+            option is Option<T>.None;
 
         public static bool IsSome<T>(this Option<T> option) =>
-            option.Match(() => false, _ => true);
+            option is Option<T>.Some;
 
         public static void Iter<T>(this Option<T> option, Action<T> action) =>
             option.Match(() => Unit.Value, v => { action(v); return Unit.Value; });
