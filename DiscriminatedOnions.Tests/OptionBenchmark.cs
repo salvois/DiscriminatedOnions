@@ -37,10 +37,25 @@ public static class OptionBenchmark
     [Test]
     public static void Benchmark()
     {
+        const int count = 1_000_000_000;
+
         var stopwatch = Stopwatch.StartNew();
-        var sum = Enumerable.Range(0, 1_000_000_000)
+        var sum = 0L;
+        for (var i = 0; i < count; i++)
+            if (i % 2 == 0)
+                sum += i;
+        Console.WriteLine($"Sum {sum} computed imperatively in {stopwatch.ElapsedMilliseconds} ms (g0={GC.CollectionCount(0)}, g1={GC.CollectionCount(1)}, g2={GC.CollectionCount(2)}, g3={GC.CollectionCount(3)}).");
+
+        stopwatch.Restart();
+        sum = Enumerable.Range(0, count)
+            .Where(i => i % 2 == 0)
+            .Aggregate(0L, (acc, i) => acc + i);
+        Console.WriteLine($"Sum {sum} computed with Where and Aggregate in {stopwatch.ElapsedMilliseconds} ms (g0={GC.CollectionCount(0)}, g1={GC.CollectionCount(1)}, g2={GC.CollectionCount(2)}, g3={GC.CollectionCount(3)}).");
+
+        stopwatch.Restart();
+        sum = Enumerable.Range(0, count)
             .Choose(i => i % 2 == 0 ? Option.Some(i) : Option.None<int>())
             .Aggregate(0L, (acc, i) => acc + i);
-        Console.WriteLine($"Sum {sum} computed in {stopwatch.ElapsedMilliseconds} ms (g0={GC.CollectionCount(0)}, g1={GC.CollectionCount(1)}, g2={GC.CollectionCount(2)}, g3={GC.CollectionCount(3)}).");
+        Console.WriteLine($"Sum {sum} computed with Choose and Aggregate in {stopwatch.ElapsedMilliseconds} ms (g0={GC.CollectionCount(0)}, g1={GC.CollectionCount(1)}, g2={GC.CollectionCount(2)}, g3={GC.CollectionCount(3)}).");
     }
 }

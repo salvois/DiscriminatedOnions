@@ -4,9 +4,24 @@
 
 Welcome to this hacky, tiny and hopefully useful library that aims to bring some discriminated unions to C#, together with a bunch of techniques to roll your own ones.
 
-This is heavily inspired (as in "shamelessly copied") from F# discriminated union types and standard library, so you will find types and utility functions for `Option`s, `Result`s and `Choice`s.
+This is heavily inspired (as in "shamelessly copied") from F# discriminated union types and standard library, so you will find types and utility functions for `Option`s, `Result`s and `Choice`s, as well as poor man's `unit` type and `|>` (pipe) operator.
 
 I have written this library because I needed it and because it was fun, but it doesn't claim to be something as structured as the [OneOf](https://github.com/mcintyre321/OneOf/) library. In my view, it is just something temporary that may be useful until the C# language gets native support for those features (hopefully soon).
+
+## Table of contents
+
+  - [Rolling your own discriminated unions](#rolling-your-own-discriminated-unions)
+  - [Option type](#option-type)
+    - [Utility functions for the Option type](#utility-functions-for-the-option-type)
+    - [Utility functions for IEnumerable involving the Option type](#utility-functions-for-ienumerable-involving-the-option-type)
+  - [Result type](#result-type)
+    - [Utility functions for the Result type](#utility-functions-for-the-result-type)
+  - [Choice types](#choice-types)
+  - [Single-case union types](#single-case-union-types)
+  - [Unit type](#unit-type)
+  - [Piping function calls](#piping-function-calls)
+  - [Caveats](#caveats)
+  - [License](#license)
 
 ## Rolling your own discriminated unions
 
@@ -169,7 +184,7 @@ public abstract record Result<T, TError>
 }
 ```
 
-### Utility functions for the Option type
+### Utility functions for the Result type
 
 Together with the `Result<T>` type itself, a companion static class `Result` of utility functions is provided, including `Bind`, `Map` and `MapError` as defined in the [F# Result module](https://fsharp.github.io/fsharp-core-docs/reference/fsharp-core-resultmodule.html). Especially, `Bind` is very convenient when chaining functions when the result of the previous one becomes the input of the next one, something described as [Railway oriented programming](https://fsharpforfunandprofit.com/posts/recipe-part2/) in the famous [F# for Fun and Profit](https://fsharpforfunandprofit.com/) site.
 
@@ -223,7 +238,7 @@ public readonly record struct CustomerId(int Value);
 public readonly record struct OrderId(int Value);
 ```
 
-This library provides no features to create such types, because the built-in feature of the language can be leveraged, but I encourage to try this technique to, again, let the compiler stop you when you try to shoot yourself. A properly modeled domain can dramatically reduce nasty bugs caused by the so called "primitive obsession".
+This library provides no features to create such types, because the built-in feature of the language can be leveraged, but I encourage to try this technique to let the compiler stop you when you try to shoot yourself. A properly modeled domain can dramatically reduce nasty bugs caused by the so called "primitive obsession".
 
 ## Unit type
 
@@ -252,6 +267,34 @@ shape.Match(
     }
 );
 ```
+
+## Piping function calls
+
+A feature commonly used when working with functions is calling them in a so-called pipeline where the output of the previous function becomes the input of the next one. F# uses its signature `|>` (pipe) operator to facilitate this. C# uses extension methods to offer similar functionality.
+
+This library provides the following extension methods to emulate the pipe operator, letting you chain multiple function calls without writing ad hoc extension methods:
+
+```csharp
+public static class PipeExtensions
+{
+    public static TOut Pipe<TIn, TOut>(this TIn previous, Func<TIn, TOut> next) =>
+        next(previous);
+
+    public static T PipeIf<T>(this T previous, Func<T, bool> predicate, Func<T, T> next) =>
+        predicate(previous) ? next(previous) : previous;
+}
+
+21.Pipe(v => v + 1).Pipe(v => v * 2);
+// returns 42
+
+20.PipeIf(v => v < 10, v => v * 2);
+// returns 20
+```
+
+`Pipe` is defined just like F#'s `|>`, that is the `previous` value is passed to the `next` lambda function, effectively inverting the order they are written. `PipeIf` calls the `next` lambda function only if the specified predicate returns true, allowing pipelines with optional steps.
+
+Both `Pipe` and `PipeIf` provide four overloads (not shown here for conciseness), where either `previous` or `next` are a `Task` that must be awaited, allowing mixed pipelines of synchronous and asynchronous steps.
+
 
 ## Caveats
 
