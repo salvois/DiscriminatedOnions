@@ -38,7 +38,7 @@ namespace DiscriminatedOnions
 
         public record Some : Option<T>
         {
-            private T Value { get; }
+            public T Value { get; }
             internal Some(T value) => Value = value;
             public void Deconstruct(out T value) => value = Value;
         }

@@ -99,7 +99,7 @@ public abstract record Option<T>
     public U Match<U>(Func<U> onNone, Func<T, U> onSome);
 }
 ```
-The actual definition is a little more complex, to force you to use one of the named constructors explained below, and access the value of the `Some` case only using deconstruction.
+The actual definition is a little more complex, to force you to use one of the named constructors explained below.
 
 ### Utility functions for the Option type
 

@@ -61,6 +61,15 @@ public static class OptionTest
     public static void Inequality_Some() => Option.Some("value").Should().NotBe(Option.Some("anotherValue"));
 
     [Test]
+    public static void Equivalency_Some() => Option.Some("value").Should().BeEquivalentTo(Option.Some("value"));
+
+    [Test]
+    public static void Equivalency_None() => Option.None<string>().Should().BeEquivalentTo(Option.None<string>());
+
+    [Test]
+    public static void NotEquivalency_Some() => Option.Some("value").Should().NotBeEquivalentTo(Option.Some("anotherValue"));
+
+    [Test]
     public static void Bind_Some() =>
         Option.Some(GoodValue)
             .Bind(v => Option.Some(v + "Altered"))
