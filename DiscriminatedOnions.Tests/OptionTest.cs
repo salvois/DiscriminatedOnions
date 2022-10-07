@@ -91,7 +91,7 @@ public static class OptionTest
 
     [Test]
     public static void Contains_None() => Option.None<string>().Contains("value").Should().BeFalse();
-    
+
     [Test]
     public static void Count_Some() => Option.Some(GoodValue).Count().Should().Be(1);
 
@@ -136,6 +136,21 @@ public static class OptionTest
 
     [Test]
     public static void Flatten_None() => Option.None<Option<string>>().Flatten().Should().Be(Option.None<string>());
+
+    [Test]
+    public static void Fold_None() => Option.None<int>().Fold(10, (acc, v) => acc + v * 2).Should().Be(10);
+
+    [Test]
+    public static void ForAll_Some_Matching() => Option.Some(42).ForAll(v => v >= 5).Should().BeTrue();
+
+    [Test]
+    public static void ForAll_Some_NotMatching() => Option.Some(4).ForAll(v => v >= 5).Should().BeFalse();
+
+    [Test]
+    public static void ForAll_None() => Option.None<int>().ForAll(v => v >= 5).Should().BeTrue();
+
+    [Test]
+    public static void Fold_Some() => Option.Some(1).Fold(10, (acc, v) => acc + v * 2).Should().Be(12);
 
     [Test]
     public static void Get_Some() => Option.Some(GoodValue).Get().Should().Be(GoodValue);
@@ -186,6 +201,30 @@ public static class OptionTest
             .Should().Be(DummyValue);
 
     [Test]
+    public static void Map2_Some_Some() =>
+        (Option.Some(42), Option.Some(8)).Map2((v1, v2) => v1 + v2).Should().Be(Option.Some(50));
+
+    [Test]
+    public static void Map2_Some_None() =>
+        (Option.Some(42), Option.None<int>()).Map2((v1, v2) => v1 + v2).Should().Be(Option.None<int>());
+
+    [Test]
+    public static void Map2_None_Some() =>
+        (Option.None<int>(), Option.Some(42)).Map2((v1, v2) => v1 + v2).Should().Be(Option.None<int>());
+
+    [Test]
+    public static void Map2_None_Nome() =>
+        (Option.None<int>(), Option.None<int>()).Map2((v1, v2) => v1 + v2).Should().Be(Option.None<int>());
+
+    [Test]
+    public static void Map3_Some_Some_Some() =>
+        (Option.Some(42), Option.Some(8), Option.Some(50)).Map3((v1, v2, v3) => v1 + v2 + v3).Should().Be(Option.Some(100));
+
+    [Test]
+    public static void Map3_Some_Some_None() =>
+        (Option.Some(42), Option.Some(8), Option.None<int>()).Map3((v1, v2, v3) => v1 + v2 + v3).Should().Be(Option.None<int>());
+
+    [Test]
     public static void OfNullable_NotNull() => Option.OfNullable((int?)42).Should().Be(Option.Some(42));
 
     [Test]
@@ -214,6 +253,18 @@ public static class OptionTest
 
     [Test]
     public static void ToNullable_Null() => Option.None<int>().ToNullable().Should().BeNull();
+
+    [Test]
+    public static void ToArray_Some() => Option.Some(42).ToArray().Should().BeEquivalentTo(new[] { 42 });
+
+    [Test]
+    public static void ToArray_None() => Option.None<int>().ToArray().Should().BeEquivalentTo(Array.Empty<int>());
+
+    [Test]
+    public static void ToEnumerable_Some() => Option.Some(42).ToEnumerable().Should().BeEquivalentTo(new[] { 42 });
+
+    [Test]
+    public static void ToEnumerable_None() => Option.None<int>().ToEnumerable().Should().BeEquivalentTo(Array.Empty<int>());
 
     [Test]
     public static void ToObj_NotNull() => Option.Some(GoodValue).ToObj().Should().Be(GoodValue);

@@ -25,6 +25,7 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 using System;
+using System.Collections.Generic;
 
 namespace DiscriminatedOnions;
 
@@ -81,6 +82,12 @@ public static class Option
     public static Option<T> Flatten<T>(this Option<Option<T>> option) =>
         option.Match(None<T>, v => v);
 
+    public static TState Fold<T, TState>(this Option<T> option, TState initialState, Func<TState, T, TState> folder) =>
+        option.Match(() => initialState, v => folder(initialState, v));
+
+    public static bool ForAll<T>(this Option<T> option, Func<T, bool> predicate) =>
+        option.Match(() => true, predicate);
+
     public static T Get<T>(this Option<T> option) =>
         option is Option<T>.Some(var v) ? v : throw new InvalidOperationException();
 
@@ -90,11 +97,28 @@ public static class Option
     public static bool IsSome<T>(this Option<T> option) =>
         option is Option<T>.Some;
 
-    public static void Iter<T>(this Option<T> option, Action<T> action) =>
-        option.Match(() => Unit.Value, v => { action(v); return Unit.Value; });
+    public static void Iter<T>(this Option<T> option, Action<T> action)
+    {
+        if (option is Option<T>.Some(var v))
+            action(v);
+    }
 
     public static Option<U> Map<T, U>(this Option<T> option, Func<T, U> mapping) =>
         option.Match(None<U>, v => Some(mapping(v)));
+
+    public static Option<U> Map2<T1, T2, U>(this (Option<T1>, Option<T2>) options, Func<T1, T2, U> mapping) =>
+        options switch
+        {
+            (Option<T1>.Some(var v1), Option<T2>.Some(var v2)) => Some(mapping(v1, v2)),
+            _ => None<U>()
+        };
+
+    public static Option<U> Map3<T1, T2, T3, U>(this (Option<T1>, Option<T2>, Option<T3>) options, Func<T1, T2, T3, U> mapping) =>
+        options switch
+        {
+            (Option<T1>.Some(var v1), Option<T2>.Some(var v2), Option<T3>.Some(var v3)) => Some(mapping(v1, v2, v3)),
+            _ => None<U>()
+        };
 
     public static Option<T> OfNullable<T>(T? value) where T : struct =>
         value.HasValue ? Some(value.Value) : None<T>();
@@ -107,6 +131,15 @@ public static class Option
 
     public static Option<T> OrElseWith<T>(this Option<T> option, Func<Option<T>> ifNoneThunk) =>
         option.Match(ifNoneThunk, _ => option);
+
+    public static T[] ToArray<T>(this Option<T> option) =>
+        option.Match(Array.Empty<T>, v => new[] { v });
+
+    public static IEnumerable<T> ToEnumerable<T>(this Option<T> option)
+    {
+        if (option is Option<T>.Some(var v))
+            yield return v;
+    }
 
     public static T? ToNullable<T>(this Option<T> option) where T : struct =>
         option.Match(() => (T?)null, v => v);
