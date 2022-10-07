@@ -40,6 +40,8 @@ public abstract record Result<T, TError>
             Ok ok => onOk(ok.ResultValue),
             _ => throw new ArgumentOutOfRangeException()
         };
+
+    private Result() { }
 }
 
 public static class Result

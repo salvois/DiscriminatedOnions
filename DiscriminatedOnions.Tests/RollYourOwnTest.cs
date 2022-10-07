@@ -45,6 +45,8 @@ public static class RollYourOwnTest
                 Circle(var radius) => onCircle(radius),
                 _ => throw new ArgumentOutOfRangeException()
             };
+
+        private Shape() { }
     }
 
     private static double ComputeAreaUsingSwitch(this Shape shape) =>

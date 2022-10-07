@@ -40,6 +40,8 @@ public abstract record Choice<T1, T2>
             Choice2 c => onChoice2(c.Item),
             _ => throw new ArgumentOutOfRangeException()
         };
+
+    private Choice() { }
 }
 
 public abstract record Choice<T1, T2, T3>
@@ -56,6 +58,8 @@ public abstract record Choice<T1, T2, T3>
             Choice3 c => onChoice3(c.Item),
             _ => throw new ArgumentOutOfRangeException()
         };
+
+    private Choice() { }
 }
 
 public abstract record Choice<T1, T2, T3, T4>
@@ -74,6 +78,8 @@ public abstract record Choice<T1, T2, T3, T4>
             Choice4 c => onChoice4(c.Item),
             _ => throw new ArgumentOutOfRangeException()
         };
+
+    private Choice() { }
 }
 
 public abstract record Choice<T1, T2, T3, T4, T5>
@@ -94,6 +100,8 @@ public abstract record Choice<T1, T2, T3, T4, T5>
             Choice5 c => onChoice5(c.Item),
             _ => throw new ArgumentOutOfRangeException()
         };
+
+    private Choice() { }
 }
 
 public abstract record Choice<T1, T2, T3, T4, T5, T6>
@@ -116,8 +124,10 @@ public abstract record Choice<T1, T2, T3, T4, T5, T6>
             Choice6 c => onChoice6(c.Item),
             _ => throw new ArgumentOutOfRangeException()
         };
+
+    private Choice() { }
 }
-    
+
 public abstract record Choice<T1, T2, T3, T4, T5, T6, T7>
 {
     public record Choice1(T1 Item) : Choice<T1, T2, T3, T4, T5, T6, T7>;
@@ -140,4 +150,6 @@ public abstract record Choice<T1, T2, T3, T4, T5, T6, T7>
             Choice7 c => onChoice7(c.Item),
             _ => throw new ArgumentOutOfRangeException()
         };
+
+    private Choice() { }
 }

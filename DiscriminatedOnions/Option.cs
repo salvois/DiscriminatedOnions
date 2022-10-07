@@ -51,6 +51,8 @@ public abstract record Option<T>
             Some(var v) => onSome(v),
             _ => throw new ArgumentOutOfRangeException()
         };
+
+    private Option() { }
 }
 
 public static class Option
