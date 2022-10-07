@@ -27,32 +27,31 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 using System;
 using System.Threading.Tasks;
 
-namespace DiscriminatedOnions
+namespace DiscriminatedOnions;
+
+public static class PipeExtensions
 {
-    public static class PipeExtensions
-    {
-        public static TOut Pipe<TIn, TOut>(this TIn previous, Func<TIn, TOut> next) =>
-            next(previous);
+    public static TOut Pipe<TIn, TOut>(this TIn previous, Func<TIn, TOut> next) =>
+        next(previous);
 
-        public static async Task<TOut> Pipe<TIn, TOut>(this TIn previous, Func<TIn, Task<TOut>> next) =>
-            await next(previous);
+    public static async Task<TOut> Pipe<TIn, TOut>(this TIn previous, Func<TIn, Task<TOut>> next) =>
+        await next(previous);
 
-        public static async Task<TOut> Pipe<TIn, TOut>(this Task<TIn> previous, Func<TIn, TOut> next) =>
-            next(await previous);
+    public static async Task<TOut> Pipe<TIn, TOut>(this Task<TIn> previous, Func<TIn, TOut> next) =>
+        next(await previous);
 
-        public static async Task<TOut> Pipe<TIn, TOut>(this Task<TIn> previous, Func<TIn, Task<TOut>> next) =>
-            await next(await previous);
+    public static async Task<TOut> Pipe<TIn, TOut>(this Task<TIn> previous, Func<TIn, Task<TOut>> next) =>
+        await next(await previous);
 
-        public static T PipeIf<T>(this T previous, Func<T, bool> predicate, Func<T, T> next) =>
-            predicate(previous) ? next(previous) : previous;
+    public static T PipeIf<T>(this T previous, Func<T, bool> predicate, Func<T, T> next) =>
+        predicate(previous) ? next(previous) : previous;
 
-        public static async Task<T> PipeIf<T>(this T previous, Func<T, bool> predicate, Func<T, Task<T>> next) =>
-            predicate(previous) ? await next(previous) : previous;
+    public static async Task<T> PipeIf<T>(this T previous, Func<T, bool> predicate, Func<T, Task<T>> next) =>
+        predicate(previous) ? await next(previous) : previous;
 
-        public static async Task<T> PipeIf<T>(this Task<T> previous, Func<T, bool> predicate, Func<T, T> next) =>
-            PipeIf(await previous, predicate, next);
+    public static async Task<T> PipeIf<T>(this Task<T> previous, Func<T, bool> predicate, Func<T, T> next) =>
+        PipeIf(await previous, predicate, next);
 
-        public static async Task<T> PipeIf<T>(this Task<T> previous, Func<T, bool> predicate, Func<T, Task<T>> next) =>
-            await PipeIf(await previous, predicate, next);
-    }
+    public static async Task<T> PipeIf<T>(this Task<T> previous, Func<T, bool> predicate, Func<T, Task<T>> next) =>
+        await PipeIf(await previous, predicate, next);
 }

@@ -37,8 +37,12 @@ public static class OptionBenchmark
     [Test]
     public static void Benchmark()
     {
-        const int count = 1_000_000_000;
+        DoBenchmark(1_000_000);
+        DoBenchmark(1_000_000_000);
+    }
 
+    private static void DoBenchmark(int count)
+    {
         var stopwatch = Stopwatch.StartNew();
         var sum = 0L;
         for (var i = 0; i < count; i++)

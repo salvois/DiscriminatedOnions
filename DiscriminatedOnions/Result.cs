@@ -26,34 +26,33 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 using System;
 
-namespace DiscriminatedOnions
+namespace DiscriminatedOnions;
+
+public abstract record Result<T, TError>
 {
-    public abstract record Result<T, TError>
-    {
-        public record Error(TError ErrorValue) : Result<T, TError>;
-        public record Ok(T ResultValue) : Result<T, TError>;
+    public record Error(TError ErrorValue) : Result<T, TError>;
+    public record Ok(T ResultValue) : Result<T, TError>;
 
-        public U Match<U>(Func<TError, U> onError, Func<T, U> onOk) =>
-            this switch
-            {
-                Error error => onError(error.ErrorValue),
-                Ok ok => onOk(ok.ResultValue),
-                _ => throw new ArgumentOutOfRangeException()
-            };
-    }
+    public U Match<U>(Func<TError, U> onError, Func<T, U> onOk) =>
+        this switch
+        {
+            Error error => onError(error.ErrorValue),
+            Ok ok => onOk(ok.ResultValue),
+            _ => throw new ArgumentOutOfRangeException()
+        };
+}
 
-    public static class Result
-    {
-        private static Result<T, TError> Ok<T, TError>(T resultValue) => new Result<T, TError>.Ok(resultValue);
-        private static Result<T, TError> Error<T, TError>(TError errorValue) => new Result<T, TError>.Error(errorValue);
+public static class Result
+{
+    private static Result<T, TError> Ok<T, TError>(T resultValue) => new Result<T, TError>.Ok(resultValue);
+    private static Result<T, TError> Error<T, TError>(TError errorValue) => new Result<T, TError>.Error(errorValue);
 
-        public static Result<U, TError> Bind<T, TError, U>(this Result<T, TError> result, Func<T, Result<U, TError>> binder) =>
-            result.Match(Error<U, TError>, binder);
+    public static Result<U, TError> Bind<T, TError, U>(this Result<T, TError> result, Func<T, Result<U, TError>> binder) =>
+        result.Match(Error<U, TError>, binder);
 
-        public static Result<U, TError> Map<T, TError, U>(this Result<T, TError> result, Func<T, U> mapping) =>
-            result.Match(Error<U, TError>, v => new Result<U, TError>.Ok(mapping(v)));
+    public static Result<U, TError> Map<T, TError, U>(this Result<T, TError> result, Func<T, U> mapping) =>
+        result.Match(Error<U, TError>, v => new Result<U, TError>.Ok(mapping(v)));
 
-        public static Result<T, U> MapError<T, TError, U>(this Result<T, TError> result, Func<TError, U> mapping) =>
-            result.Match(e => Error<T, U>(mapping(e)), Ok<T, U>);
-    }
+    public static Result<T, U> MapError<T, TError, U>(this Result<T, TError> result, Func<TError, U> mapping) =>
+        result.Match(e => Error<T, U>(mapping(e)), Ok<T, U>);
 }
