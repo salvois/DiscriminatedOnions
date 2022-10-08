@@ -29,36 +29,32 @@ using System.Collections.Generic;
 
 namespace DiscriminatedOnions;
 
-public abstract record Option<T>
+public readonly record struct Option<T>
 {
-    public record None : Option<T>
-    {
-        internal static readonly Option<T> Value = new None();
-        private None() { }
-    }
+    public bool IsSome { get; private init; }
+    public T Value { get; private init; }
 
-    public record Some : Option<T>
-    {
-        public T Value { get; }
-        internal Some(T value) => Value = value;
-        public void Deconstruct(out T value) => value = Value;
-    }
+    public static Option<T> None = new(false, default!);
 
     public U Match<U>(Func<U> onNone, Func<T, U> onSome) =>
-        this switch
-        {
-            None => onNone(),
-            Some(var v) => onSome(v),
-            _ => throw new ArgumentOutOfRangeException()
-        };
+        IsSome ? onSome(Value) : onNone();
 
-    private Option() { }
+    public void Match(Action onNone, Action<T> onSome)
+    {
+        if (IsSome) onSome(Value); else onNone();
+    }
+
+    internal Option(bool isSome, T value)
+    {
+        IsSome = isSome;
+        Value = value;
+    }
 }
 
 public static class Option
 {
-    public static Option<T> Some<T>(T value) => new Option<T>.Some(value);
-    public static Option<T> None<T>() => Option<T>.None.Value;
+    public static Option<T> Some<T>(T value) => new(true, value);
+    public static Option<T> None<T>() => Option<T>.None;
 
     public static Option<U> Bind<T, U>(this Option<T> option, Func<T, Option<U>> binder) =>
         option.Match(None<U>, binder);
@@ -91,17 +87,17 @@ public static class Option
         option.Match(() => true, predicate);
 
     public static T Get<T>(this Option<T> option) =>
-        option is Option<T>.Some(var v) ? v : throw new InvalidOperationException();
+        option is { IsSome: true, Value: var v } ? v : throw new InvalidOperationException();
 
     public static bool IsNone<T>(this Option<T> option) =>
-        option is Option<T>.None;
+        !option.IsSome;
 
     public static bool IsSome<T>(this Option<T> option) =>
-        option is Option<T>.Some;
+        option.IsSome;
 
     public static void Iter<T>(this Option<T> option, Action<T> action)
     {
-        if (option is Option<T>.Some(var v))
+        if (option is { IsSome: true, Value: var v })
             action(v);
     }
 
@@ -111,14 +107,14 @@ public static class Option
     public static Option<U> Map2<T1, T2, U>(this (Option<T1>, Option<T2>) options, Func<T1, T2, U> mapping) =>
         options switch
         {
-            (Option<T1>.Some(var v1), Option<T2>.Some(var v2)) => Some(mapping(v1, v2)),
+            ({ IsSome: true, Value: var v1 }, { IsSome: true, Value: var v2 }) => Some(mapping(v1, v2)),
             _ => None<U>()
         };
 
     public static Option<U> Map3<T1, T2, T3, U>(this (Option<T1>, Option<T2>, Option<T3>) options, Func<T1, T2, T3, U> mapping) =>
         options switch
         {
-            (Option<T1>.Some(var v1), Option<T2>.Some(var v2), Option<T3>.Some(var v3)) => Some(mapping(v1, v2, v3)),
+            ({ IsSome: true, Value: var v1 }, { IsSome: true, Value: var v2 }, { IsSome: true, Value: var v3 }) => Some(mapping(v1, v2, v3)),
             _ => None<U>()
         };
 
@@ -139,7 +135,7 @@ public static class Option
 
     public static IEnumerable<T> ToEnumerable<T>(this Option<T> option)
     {
-        if (option is Option<T>.Some(var v))
+        if (option is { IsSome: true, Value: var v })
             yield return v;
     }
 

@@ -34,14 +34,14 @@ public static class OptionEnumerableExtensions
     public static IEnumerable<U> Choose<T, U>(this IEnumerable<T> source, Func<T, Option<U>> chooser)
     {
         foreach (var item in source)
-            if (chooser(item) is Option<U>.Some(var v))
+            if (chooser(item) is { IsSome: true, Value: var v })
                 yield return v;
     }
 
     public static U Pick<T, U>(this IEnumerable<T> source, Func<T, Option<U>> chooser)
     {
         foreach (var item in source)
-            if (chooser(item) is Option<U>.Some(var v))
+            if (chooser(item) is { IsSome: true, Value: var v })
                 return v;
         throw new KeyNotFoundException();
     }
@@ -133,7 +133,7 @@ public static class OptionEnumerableExtensions
     public static Option<U> TryPick<T, U>(this IEnumerable<T> source, Func<T, Option<U>> chooser)
     {
         foreach (var item in source)
-            if (chooser(item) is Option<U>.Some some)
+            if (chooser(item) is { IsSome: true } some)
                 return some;
         return Option.None<U>();
     }
@@ -144,7 +144,7 @@ public static class OptionEnumerableExtensions
         while (true)
         {
             var option = generator(currentState);
-            if (option is Option<(T, TState)>.Some(var v))
+            if (option is { IsSome: true, Value: var v })
             {
                 var (el, newState) = v;
                 currentState = newState;
