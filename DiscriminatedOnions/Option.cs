@@ -34,7 +34,7 @@ public readonly record struct Option<T>
     public bool IsSome { get; private init; }
     public T Value { get; private init; }
 
-    public static Option<T> None = new(false, default!);
+    public static readonly Option<T> None = new(false, default!);
 
     public U Match<U>(Func<U> onNone, Func<T, U> onSome) =>
         IsSome ? onSome(Value) : onNone();

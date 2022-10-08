@@ -49,6 +49,28 @@ public static class OptionTest
             .Should().Be(DummyValue);
 
     [Test]
+    public static void Some_Statement()
+    {
+        var actual = DummyValue;
+        Option.Some(GoodValue)
+            .Match(
+                onNone: () => actual = DummyValue,
+                onSome: v => actual = v);
+        actual.Should().Be(GoodValue);
+    }
+
+    [Test]
+    public static void None_Statement()
+    {
+        var actual = DummyValue;
+        Option.None<string>()
+            .Match(
+                onNone: () => actual = GoodValue,
+                onSome: v => actual = v);
+        actual.Should().Be(GoodValue);
+    }
+
+    [Test]
     public static void Equality_Some() => Option.Some("value").Should().Be(Option.Some("value"));
 
     [Test]
