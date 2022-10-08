@@ -1,8 +1,8 @@
-# DiscriminatedOnions - A stinky but tasty hack to emulate F#-like discriminated unions in C#
+# Discriminated Onions - A stinky but tasty hack to emulate F#-like discriminated unions in C#
 
 [![NuGet](https://img.shields.io/nuget/v/DiscriminatedOnions.svg)](https://www.nuget.org/packages/DiscriminatedOnions)
 
-Welcome to this hacky, tiny and hopefully useful library that aims to bring some discriminated unions to C#, together with a bunch of techniques to roll your own ones.
+Welcome to this hacky, tiny and hopefully useful .NET 6 library that aims to bring some discriminated unions to C#, together with a bunch of techniques to roll your own ones.
 
 This is heavily inspired (as in "shamelessly copied") from F# discriminated union types and standard library, so you will find types and utility functions for `Option`s, `Result`s and `Choice`s, as well as poor man's `unit` type and `|>` (pipe) operator.
 
@@ -11,6 +11,7 @@ I have written this library because I needed it and because it was fun, but it d
 ## Table of contents
 
   - [Rolling your own discriminated unions](#rolling-your-own-discriminated-unions)
+  - [Reference type vs. value type discriminated unions](#reference-type-vs-value-type-discriminated-unions)
   - [Option type](#option-type)
     - [Utility functions for the Option type](#utility-functions-for-the-option-type)
     - [Utility functions for IEnumerable involving the Option type](#utility-functions-for-ienumerable-involving-the-option-type)
@@ -20,7 +21,6 @@ I have written this library because I needed it and because it was fun, but it d
   - [Single-case union types](#single-case-union-types)
   - [Unit type](#unit-type)
   - [Piping function calls](#piping-function-calls)
-  - [Caveats](#caveats)
   - [License](#license)
 
 ## Rolling your own discriminated unions
@@ -33,77 +33,89 @@ The idea this library is based on is [ab]using C# 9 records to emulate F#-like d
 public abstract record Shape {
     public record Rectangle(double Width, double Height) : Shape;
     public record Circle(double Radius) : Shape;
+    private Shape() { }
 }
 
 var rectangle = new Shape.Rectangle(10.0, 1.3);
 var circle = new Shape.Circle(1.0);
 ```
 
-You can then match union cases with the C# 8 `switch` expression and pattern matching, like this:
+Note that union cases are written inside the base abstract record, which should then be used as a discriminated union type, and that a private constructor has been implemented in the base abstract record to forbid creation of unexpected new union cases.
+
+Once you have your discriminated union, you can then match union cases with the C# 8 `switch` expression and pattern matching, like this:
 
 ```csharp
-var area =
-    shape switch {
-        Shape.Rectangle r => r.Width * r.Height,
-        Shape.Circle c => c.Radius * c.Radius * Math.PI,
-        _ => throw new ArgumentOutOfRangeException() // This is one point where this approach is inferior to real discriminated unions
-    };
-
-// or using deconstruction:
-
-var area =
-    shape switch
-    {
-        Shape.Rectangle(var width, var height) => width * height,
-        Shape.Circle(var radius) => radius * radius * Math.PI,
-        _ => throw new ArgumentOutOfRangeException()
-    };
+var area = shape switch {
+    Shape.Rectangle r => r.Width * r.Height,
+    Shape.Circle c => c.Radius * c.Radius * Math.PI,
+    // The need for a default arm is where this approach is inferior to real discriminated unions
+    _ => throw new ArgumentOutOfRangeException()
+};
 ```
 
-This lets you use the full power of pattern matching, including matching tuples or including conditions, but unfortunately the compiler has no way to tell that your `switch` expression is exhaustive, that is, you have covered all possible cases. If you want this extra safety at the expenses of flexibility you can roll your own matching method, like the following inspired from the F# `match` expression:
+This lets you use the full power of pattern matching, including matching tuples, deconstruction or additional conditions, but unfortunately the compiler has no way to tell that your `switch` expression is exhaustive, that is, you have covered all possible cases, which is *the* killer feature of real discriminated unions.
+
+If you want this extra safety at the expenses of flexibility you can roll your own matching method, like the following inspired from the F# `match` expression. Thus, your complete `Shape` "discriminated onion" would look like this:
 
 ```csharp
 public abstract record Shape {
     public record Rectangle(double Width, double Height) : Shape;
     public record Circle(double Radius) : Shape;
 
-    public U Match<U>(Func<double, double, U> onRectangle, Func<double, U> onCircle) =>
+    public U Match<U>(Func<Rectangle, U> onRectangle, Func<Circle, U> onCircle) =>
         this switch
         {
-            Rectangle(var width, var height) => onRectangle(width, height),
-            Circle(var radius) => onCircle(radius),
+            Rectangle r => onRectangle(r),
+            Circle c => onCircle(c),
             _ => throw new ArgumentOutOfRangeException()
         };
+
+    private Shape() { }
 }
 
-var area =
-    shape.Match(
-        onRectangle: (w, h) => w * h,
-        onCircle: r => r * r * Math.PI);
+var area = shape.Match(
+    onRectangle: r => r.Width * r.Height,
+    onCircle: c => c.Radius * c.Radius * Math.PI);
 ```
 
 `Match` is implemented as a method to stay close to the declaration of union cases. You may want to use named arguments when invoking `Match`, so that it is clear what union cases you are handling. Being immutable, a discriminated union like this can be operated on by non-member functions, such as extension methods, built on top of `Match` or the plain `switch`.
 
 The functionality offered by this library to enable the above is... nothing! It is just a technique to leverage what is built into the language, and you are encouraged to try and make your own for your application domain. This library, however, offers some ready-made discriminated unions that have a very common use, and they are listed below.
 
+## Reference type vs. value type discriminated unions
+
+Discriminated unions implemented as proposed above are reference types, so they have a cost in terms of performance and memory. You may want to take this into account when developing performance-sensitive pieces of code. For example, F# lets you create value-type discriminated unions (`Result` in F# actually is) by annotating them with `[<Struct>]`, for scenarios where a value type can provide a benefit.
+
+In some cases, rolling your own discriminated-union-like value types, for example using C# 10 `readonly record struct`s, may be desirable. The idea is embedding in your struct all possible cases as properties and use some tag (such as an enum) to identify which one is currently "active". For an example, see how `Option<T>` and `Result<T, TError>` are implemented in this library.
+
+Avoiding inheritance to achieve value-type unions usually costs more in terms of boiler plate code, prevents to leverage run-time type information for union cases, and prevents you to use pattern matching in the way described above (rather, you would pattern match on the tag), but it may let you gain better performance and lower pressure on the garbage collector.
+
 ## Option type
 
-`Option` is a union type that can represent either `Some` value, or `None` to indicate that no value is present. Think of `null` as it should have been. The key feature is that the compiler will force you to handle both the `Some` and the `None` cases explicitly. Think of it as if was defined as:
+`Option` is a union type that can represent either `Some` value, or `None` to indicate that no value is present. Think of `null` as it should have been. The key feature is that the compiler will force you to handle both the `Some` and the `None` cases explicitly.
+
+Since `Option<T>` is intended to be used pervasively, it is implemented as a value type defined like:
 
 ```csharp
-public abstract record Option<T>
+public readonly record struct Option<T>
 {
-    public record None : Option<T>;
-    public record Some(T Value) : Option<T>;
+    public bool IsSome { get; }
+    public T Value { get; } // undefined if IsSome is false
 
     public U Match<U>(Func<U> onNone, Func<T, U> onSome);
+    public void Match(Action onNone, Action<T> onSome);
+
+    internal static readonly Option<T> None = new(false, default!);
+    internal Option(bool isSome, T value);
 }
 ```
-The actual definition is a little more complex, to force you to use one of the named constructors explained below.
+Properties are public for compatibility with test libraries, and to let to pattern match in those cases `Match` could not be used. **Accessing `IsSome` and `Value` (especially the latter) directly is discouraged**. The constructor is internal to force you to use one of the named constructors explained below.
 
 ### Utility functions for the Option type
 
-Together with the `Option<T>` type itself, a companion static class `Option` of utility functions is provided, again heavily inspired from the [F# Option module](https://fsharp.github.io/fsharp-core-docs/reference/fsharp-core-optionmodule.html). Besides functions such as `Bind`, `DefaultValue`, `Iter`, `Map`, `OfNullable`, `OfObj` and more, the `Option` static class also provides named constructors to create `Option<T>` values. The name constructor for `Some` helps the compiler deduce the generic argument for `T` reducing some bolilerplate, whereas the named constructor for `None` returns a singleton instance for `T`.
+Together with the `Option<T>` type itself, a companion static class `Option` of utility functions is provided. For a full description of those functions please refer to the official documentation of the [F# Option module](https://fsharp.github.io/fsharp-core-docs/reference/fsharp-core-optionmodule.html).
+
+The `Option` static class also provides named constructors to create `Option<T>` values. The named constructor for `Some` helps the compiler deduce the generic argument for `T` reducing some bolilerplate, whereas the named constructor for `None` returns a singleton instance for `T`.
 
 ```csharp
 public static class Option
@@ -119,15 +131,21 @@ public static class Option
     public static bool Exists<T>(this Option<T> option, Func<T, bool> predicate);
     public static Option<T> Filter<T>(this Option<T> option, Func<T, bool> predicate);
     public static Option<T> Flatten<T>(this Option<Option<T>> option);
+    public static TState Fold<T, TState>(this Option<T> option, TState initialState, Func<TState, T, TState> folder);
+    public static bool ForAll<T>(this Option<T> option, Func<T, bool> predicate);
     public static T Get<T>(this Option<T> option);
     public static bool IsNone<T>(this Option<T> option);
     public static bool IsSome<T>(this Option<T> option);
     public static void Iter<T>(this Option<T> option, Action<T> action);
     public static Option<U> Map<T, U>(this Option<T> option, Func<T, U> mapping);
+    public static Option<U> Map2<T1, T2, U>(this (Option<T1>, Option<T2>) options, Func<T1, T2, U> mapping);
+    public static Option<U> Map3<T1, T2, T3, U>(this (Option<T1>, Option<T2>, Option<T3>) options, Func<T1, T2, T3, U> mapping);
     public static Option<T> OfNullable<T>(T? value) where T : struct;
     public static Option<T> OfObj<T>(T? obj) where T : class;
     public static Option<T> OrElse<T>(this Option<T> option, Option<T> ifNone);
     public static Option<T> OrElseWith<T>(this Option<T> option, Func<Option<T>> ifNoneThunk);
+    public static T[] ToArray<T>(this Option<T> option);
+    public static IEnumerable<T> ToEnumerable<T>(this Option<T> option);
     public static T? ToNullable<T>(this Option<T> option) where T : struct;
     public static T? ToObj<T>(this Option<T> option) where T : class;
 }
@@ -135,16 +153,16 @@ public static class Option
 Option<string> someString = Option.Some("I have a value");
 Option<string> noString = Option.None<string>();
 
-someString.Bind(v => v + " today");
+Option<string> bound = someString.Bind(v => v + " today");
 // returns Option.Some("I have a value today")
 
-noString.DefaultValue("default value");
+Option<string> defaulted = noString.DefaultValue("default value");
 // returns "default value"
 ```
 
 ### Utility functions for IEnumerable involving the Option type
 
-An `OptionEnumerableExtensions` static class of extension methods is provided to enrich LINQ functionality on `IEnumerable`s with the `Option` type. This similar to functionality of the [F# Seq module](https://fsharp.github.io/fsharp-core-docs/reference/fsharp-collections-seqmodule.html) for functions involving `Option`s either as argument or return value, such as `Choose`, `Pick`, `TryFind`, `TryHead`, `Unfold` and more:
+An `OptionEnumerableExtensions` static class of extension methods is provided to enrich LINQ functionality on `IEnumerable`s with the `Option` type. Please refer to the official documentation of the [F# Seq module](https://fsharp.github.io/fsharp-core-docs/reference/fsharp-collections-seqmodule.html) for a full description of the following:
 
 ```csharp
 public static class OptionEnumerableExtensions
@@ -163,30 +181,43 @@ public static class OptionEnumerableExtensions
     public static IEnumerable<T> Unfold<T, TState>(this TState state, Func<TState, Option<(T, TState)>> generator);
 }
 
-new[] { 1, 2, 3, 4, 5 }.Choose(i => i % 2 == 0 ? Option.Some(i) : Option.None<int>());
+IEnumerable<int> chosen = new[] { 1, 2, 3, 4, 5 }.Choose(
+    i => i % 2 == 0
+        ? Option.Some(i)
+        : Option.None<int>());
 // returns { 2, 4 }
 
-new[] { 1, 2, 3, 4, 5 }.TryFind(i => i % 2 == 0);
+Option<int> found = new[] { 1, 2, 3, 4, 5 }.TryFind(i => i % 2 == 0);
 // returns Option.Some(2)
 ```
 
 ## Result type
 
-`Result` is intended to represent the result of an operation or validation, that can be either `Ok` or `Error`, both carrying a payload:
+`Result<T, TError>` is intended to represent the result of an operation or validation, that can be either `Ok` or `Error`, both carrying a payload.
+
+Like `Option<T>`, it is implemented as a value type because its usage is expected to be pervasive:
 
 ```csharp
 public abstract record Result<T, TError>
 {
-    public record Error(TError ErrorValue) : Result<T, TError>;
-    public record Ok(T ResultValue) : Result<T, TError>;
+    public bool IsOk { get; }
+    public T ResultValue { get; } // undefined if IsOk is false
+    public TError ErrorValue { get; } // undefined if IsOk is true
 
     public U Match<U>(Func<TError, U> onError, Func<T, U> onOk);
+    public void Match(Action<TError> onError, Action<T> onOk);
+
+    internal Result(bool isOk, T resultValue, TError errorValue)
 }
 ```
 
+Properties are public for compatibility with test libraries, and to let to pattern match in those cases `Match` could not be used. **Accessing `IsOk`, `ResultValue` and `ErrorValue` (especially the latter two) directly is discouraged**. The constructor is internal to force you to use one of the named constructors explained below.
+
 ### Utility functions for the Result type
 
-Together with the `Result<T>` type itself, a companion static class `Result` of utility functions is provided, including `Bind`, `Map` and `MapError` as defined in the [F# Result module](https://fsharp.github.io/fsharp-core-docs/reference/fsharp-core-resultmodule.html). Especially, `Bind` is very convenient when chaining functions when the result of the previous one becomes the input of the next one, something described as [Railway oriented programming](https://fsharpforfunandprofit.com/posts/recipe-part2/) in the famous [F# for Fun and Profit](https://fsharpforfunandprofit.com/) site.
+Together with the `Result<T, TError>` type itself, a companion static class `Result` of utility functions is provided. Please refer to the official documentation of the [F# Result module](https://fsharp.github.io/fsharp-core-docs/reference/fsharp-core-resultmodule.html) for a full descrition of them.
+
+The `Bind` function is especially very convenient when chaining functions when the result of the previous one becomes the input of the next one, something described as [Railway oriented programming](https://fsharpforfunandprofit.com/posts/recipe-part2/) in the famous [F# for Fun and Profit](https://fsharpforfunandprofit.com/) site.
 
 ```csharp
 public static class Result
@@ -199,10 +230,10 @@ public static class Result
 var ok = new Result<string, int>.Ok("result value");
 var error = new Result<string, int>.Error(42);
 
-ok.Bind(v => "beautiful " + v);
+var boundOk = ok.Bind(v => "beautiful " + v);
 // returns new Results<string, int>.Ok("beautiful result value")
 
-error.Bind(v => "beautiful " + v);
+var boundError = error.Bind(v => "beautiful " + v);
 // returns new Result<string, int>.Error(42), short-circuiting
 ```
 
@@ -226,14 +257,9 @@ This library includes no helper functions for `Choice` types, and, to be honest,
 
 A common use of F# discriminated unions is to create a union with a single case, to create strong types for otherwise primitive types, such as `string`s or `int`s. This is very convenient when, for example, you don't want to pass a customer ID to a function expecting an order ID and both are integer values.
 
-C# records can be [ab]used again to provide such strong types. In C# 10 you can even declare them as `readonly record struct`s to avoid the extra dereference and bookkeeping, making them zero-cost abstractions.
+C# records can be [ab]used again to provide such strong types. In C# 10 you can even declare them as `readonly record struct`s to avoid the extra dereference and bookkeeping, making them zero-cost abstractions:
 
 ```csharp
-// C# 9
-public record CustomerId(int Value);
-public record OrderId(int Value);
-
-// C# 10
 public readonly record struct CustomerId(int Value);
 public readonly record struct OrderId(int Value);
 ```
@@ -242,7 +268,9 @@ This library provides no features to create such types, because the built-in fea
 
 ## Unit type
 
-OK, this is not a discriminated union, but we need it when we work with generic functions such as the ones in the `Option` "module". If you ever had to provide two nearly identical implementations, one taking `Action` and one taking `Func`, just because you cannot write `Func<void>` you know what I mean. Think of the unit type as the `void` as it should have been, that is a type useable as generic type argument (looks that may be the case in future C# versions).
+OK, this is not a discriminated union, but we may need it when we work with generic functions. If you ever had to provide two nearly identical implementations, one taking `Action` and one taking `Func`, just because you cannot write `Func<void>` you know what I mean.
+
+Think of the unit type as the `void` as it should have been, that is a type useable as generic type argument (looks that may be the case in future C# versions).
 
 This library provides the `Unit` type defined simply as a `record` with no properties. You can use it in your function signatures where you have to return nothing (that is, functions useful only for their side effects). The `unit` type in F# can only have one value, that is `()`. To emulate this in C#, the `Unit` record provides a static value named `Value` (which happens to be `null` as in the F# implementation) and a private constructor to prevent creating other `Unit` values:
 
@@ -253,24 +281,26 @@ public record Unit
     public static readonly Unit Value = null!;
 }
 
-// As an example, Match accepts Func's, not Action's:
+// Let's say you did not implement an overload of Shape.Match accepting Action's:
 shape.Match(
-    onRectangle: (w, h) =>
+    onRectangle: r =>
     {
-        Console.WriteLine($"Rectangle with width {w} and height {h}.");
+        Console.WriteLine($"Rectangle with width {r.Width} and height {r.Height}.");
         return Unit.Value; // unfortunately you have to return it explicitly
     }
-    onCircle: r =>
+    onCircle: c =>
     {
-        Console.WriteLine($"Circle with radius {r}.");
+        Console.WriteLine($"Circle with radius {c.Radius}.");
         return Unit.Value;
     }
 );
 ```
 
+In cases like the one above, you could just return `0`, `false`, `""`, `42` or anything else that would be discarded, but having an explicit unit type may help conveying the intent better.
+
 ## Piping function calls
 
-A feature commonly used when working with functions is calling them in a so-called pipeline where the output of the previous function becomes the input of the next one. F# uses its signature `|>` (pipe) operator to facilitate this. C# uses extension methods to offer similar functionality.
+A feature commonly used when working with functions is calling them in a so-called pipeline where the output of the previous function becomes the input of the next one. F# uses its signature `|>` (pipe) operator to facilitate this. In general C# uses extension methods to offer similar functionality.
 
 This library provides the following extension methods to emulate the pipe operator, letting you chain multiple function calls without writing ad hoc extension methods:
 
@@ -284,27 +314,16 @@ public static class PipeExtensions
         predicate(previous) ? next(previous) : previous;
 }
 
-21.Pipe(v => v + 1).Pipe(v => v * 2);
+var piped = 21.Pipe(v => v + 1).Pipe(v => v * 2);
 // returns 42
 
-20.PipeIf(v => v < 10, v => v * 2);
+var maybePiped = 20.PipeIf(v => v < 10, v => v * 2);
 // returns 20
 ```
 
 `Pipe` is defined just like F#'s `|>`, that is the `previous` value is passed to the `next` lambda function, effectively inverting the order they are written. `PipeIf` calls the `next` lambda function only if the specified predicate returns true, allowing pipelines with optional steps.
 
 Both `Pipe` and `PipeIf` provide four overloads (not shown here for conciseness), where either `previous` or `next` are a `Task` that must be awaited, allowing mixed pipelines of synchronous and asynchronous steps.
-
-
-## Caveats
-
-As said, the `switch` expression using run-time type information does work, but the compiler has no real knowledge that your union cases are part of the same discriminated union, so it will do nothing to protect you from your future self adding a union case and not handling them on all usage sites. A `Match` method may be used to mitigate this issue.
-
-Union cases for discriminated unions implemented as proposed here are full-fledged types. This means that you can have a function accepting a parameter of type `Option<string>.Some` instead of `Option<string>`, which doesn't make any sense for us but is perfectly fine for the C# type system. There is no way to protect yourself from doing this with this approach, so you should simply not do it.
-
-For the same reason, you should refrain extending the base abstract record outside the declaration of the discriminated union: just pretend it is `sealed` even if it can't be.
-
-Discriminated unions implemented as proposed here are reference types, so they have a cost in terms of performance and memory. You may want to take this into account when developing performance-sensitive pieces of code. F# lets you create value-type discriminated unions (`Result` in F# actually is) by annotating them with `[<Struct>]`, for scenarios when a value type can provide a benefit. Hovever, even if C# 10 lets you define `record struct`s, they cannot be used as shown here because of the [ab]use of the inheritance to leverage run-time type information and C# pattern matching. You could roll your own discriminated union using structs and tag fields, and in some cases that may be a good idea, but this prevents you to use C# pattern matching in the same way.
 
 ## License
 

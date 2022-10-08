@@ -31,10 +31,8 @@ namespace DiscriminatedOnions;
 
 public readonly record struct Option<T>
 {
-    public bool IsSome { get; private init; }
-    public T Value { get; private init; }
-
-    public static readonly Option<T> None = new(false, default!);
+    public bool IsSome { get; }
+    public T Value { get; }
 
     public U Match<U>(Func<U> onNone, Func<T, U> onSome) =>
         IsSome ? onSome(Value) : onNone();
@@ -43,6 +41,8 @@ public readonly record struct Option<T>
     {
         if (IsSome) onSome(Value); else onNone();
     }
+
+    internal static readonly Option<T> None = new(false, default!);
 
     internal Option(bool isSome, T value)
     {

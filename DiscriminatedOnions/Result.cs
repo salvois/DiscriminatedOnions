@@ -30,9 +30,9 @@ namespace DiscriminatedOnions;
 
 public readonly record struct Result<T, TError>
 {
-    public bool IsOk { get; private init; }
-    public T ResultValue { get; private init; }
-    public TError ErrorValue { get; private init; }
+    public bool IsOk { get; }
+    public T ResultValue { get; }
+    public TError ErrorValue { get; }
 
     public U Match<U>(Func<TError, U> onError, Func<T, U> onOk) =>
         this switch
@@ -50,10 +50,10 @@ public readonly record struct Result<T, TError>
         }
     }
 
-    internal Result(bool isOk, T value, TError errorValue)
+    internal Result(bool isOk, T resultValue, TError errorValue)
     {
         IsOk = isOk;
-        ResultValue = value;
+        ResultValue = resultValue;
         ErrorValue = errorValue;
     }
 }
