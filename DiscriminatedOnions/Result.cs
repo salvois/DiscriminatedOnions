@@ -41,6 +41,15 @@ public readonly record struct Result<T, TError>
             { IsOk: true, ResultValue: var v } => onOk(v)
         };
 
+    public void Match(Action<TError> onError, Action<T> onOk)
+    {
+        switch (this)
+        {
+            case { IsOk: false, ErrorValue: var v }: onError(v); break;
+            case { IsOk: true, ResultValue: var v }: onOk(v); break;
+        }
+    }
+
     internal Result(bool isOk, T value, TError errorValue)
     {
         IsOk = isOk;

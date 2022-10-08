@@ -52,6 +52,32 @@ public static class ResultTest
             .Should().Be((42, DummyResultValue));
 
     [Test]
+    public static void Ok_Statement()
+    {
+        var actualResultValue = DummyResultValue;
+        var actualErrorValue = DummyErrorValue;
+        Result.Ok<string, int>("resultValue")
+            .Match(
+                onError: e => actualErrorValue = e,
+                onOk: v => actualResultValue = v);
+        actualResultValue.Should().Be("resultValue");
+        actualErrorValue.Should().Be(DummyErrorValue);
+    }
+
+    [Test]
+    public static void Error_Statement()
+    {
+        var actualResultValue = DummyResultValue;
+        var actualErrorValue = DummyErrorValue;
+        Result.Error<string, int>(42)
+            .Match(
+                onError: e => actualErrorValue = e,
+                onOk: v => actualResultValue = v);
+        actualResultValue.Should().Be(DummyResultValue);
+        actualErrorValue.Should().Be(42);
+    }
+
+    [Test]
     public static void Bind_Ok() =>
         Result.Ok<string, int>("resultValue")
             .Bind(v => Result.Ok<string, int>(v + "Altered"))
