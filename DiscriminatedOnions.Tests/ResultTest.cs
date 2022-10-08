@@ -37,7 +37,7 @@ public static class ResultTest
 
     [Test]
     public static void Ok() =>
-        new Result<string, int>.Ok("resultValue")
+        Result.Ok<string, int>("resultValue")
             .Match(
                 onError: e => (e, DummyResultValue),
                 onOk: v => (DummyErrorValue, v))
@@ -45,7 +45,7 @@ public static class ResultTest
 
     [Test]
     public static void Error() =>
-        new Result<string, int>.Error(42)
+        Result.Error<string, int>(42)
             .Match(
                 onError: e => (e, DummyResultValue),
                 onOk: v => (DummyErrorValue, v))
@@ -53,8 +53,8 @@ public static class ResultTest
 
     [Test]
     public static void Bind_Ok() =>
-        new Result<string, int>.Ok("resultValue")
-            .Bind(v => new Result<string, int>.Ok(v + "Altered"))
+        Result.Ok<string, int>("resultValue")
+            .Bind(v => Result.Ok<string, int>(v + "Altered"))
             .Match(
                 onError: e => (e, DummyResultValue),
                 onOk: v => (DummyErrorValue, v))
@@ -62,8 +62,8 @@ public static class ResultTest
 
     [Test]
     public static void Bind_Error() =>
-        new Result<string, int>.Error(42)
-            .Bind(v => new Result<string, int>.Ok(v + "Altered"))
+        Result.Error<string, int>(42)
+            .Bind(v => Result.Ok<string, int>(v + "Altered"))
             .Match(
                 onError: e => (e, DummyResultValue),
                 onOk: v => (DummyErrorValue, v))
@@ -71,7 +71,7 @@ public static class ResultTest
 
     [Test]
     public static void Map_Ok() =>
-        new Result<string, int>.Ok("resultValue")
+        Result.Ok<string, int>("resultValue")
             .Map(v => v + "Altered")
             .Match(
                 onError: e => (e, DummyResultValue),
@@ -80,7 +80,7 @@ public static class ResultTest
 
     [Test]
     public static void Map_Error() =>
-        new Result<string, int>.Error(42)
+        Result.Error<string, int>(42)
             .Map(v => v + "Altered")
             .Match(
                 onError: e => (e, DummyResultValue),
@@ -89,7 +89,7 @@ public static class ResultTest
 
     [Test]
     public static void MapError_Ok() =>
-        new Result<string, int>.Ok("resultValue")
+        Result.Ok<string, int>("resultValue")
             .MapError(e => e + 1)
             .Match(
                 onError: e => (e, DummyResultValue),
@@ -98,7 +98,7 @@ public static class ResultTest
 
     [Test]
     public static void MapError_Error() =>
-        new Result<string, int>.Error(42)
+        Result.Error<string, int>(42)
             .MapError(e => e + 1)
             .Match(
                 onError: e => (e, DummyResultValue),
