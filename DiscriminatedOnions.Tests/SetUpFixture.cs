@@ -30,7 +30,7 @@ using NUnit.Framework;
 namespace DiscriminatedOnions.Tests;
 
 [SetUpFixture]
-public class Tests
+public class SetUpFixture
 {
     [OneTimeSetUp]
     public void RunBeforeAnyTests()

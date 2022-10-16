@@ -54,8 +54,8 @@ public static class OptionTest
         var actual = DummyValue;
         Option.Some(GoodValue)
             .Match(
-                onNone: () => actual = DummyValue,
-                onSome: v => actual = v);
+                onNone: () => { actual = DummyValue; },
+                onSome: v => { actual = v; });
         actual.Should().Be(GoodValue);
     }
 
@@ -65,8 +65,8 @@ public static class OptionTest
         var actual = DummyValue;
         Option.None<string>()
             .Match(
-                onNone: () => actual = GoodValue,
-                onSome: v => actual = v);
+                onNone: () => { actual = GoodValue; },
+                onSome: v => { actual = v; });
         actual.Should().Be(GoodValue);
     }
 

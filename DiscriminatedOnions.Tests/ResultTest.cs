@@ -58,8 +58,8 @@ public static class ResultTest
         var actualErrorValue = DummyErrorValue;
         Result.Ok<string, int>("resultValue")
             .Match(
-                onError: e => actualErrorValue = e,
-                onOk: v => actualResultValue = v);
+                onError: e => { actualErrorValue = e; },
+                onOk: v => { actualResultValue = v; });
         actualResultValue.Should().Be("resultValue");
         actualErrorValue.Should().Be(DummyErrorValue);
     }
@@ -71,8 +71,8 @@ public static class ResultTest
         var actualErrorValue = DummyErrorValue;
         Result.Error<string, int>(42)
             .Match(
-                onError: e => actualErrorValue = e,
-                onOk: v => actualResultValue = v);
+                onError: e => { actualErrorValue = e; },
+                onOk: v => { actualResultValue = v; });
         actualResultValue.Should().Be(DummyResultValue);
         actualErrorValue.Should().Be(42);
     }
