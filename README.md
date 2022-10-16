@@ -109,7 +109,7 @@ public readonly record struct Option<T>
     internal Option(bool isSome, T value);
 }
 ```
-Properties are public for compatibility with test libraries, and to let to pattern match in those cases `Match` could not be used. **Accessing `IsSome` and `Value` (especially the latter) directly is discouraged**. The constructor is internal to force you to use one of the named constructors explained below.
+Properties are public for compatibility with test libraries, and to let to use C# pattern matching in those cases `Match` could not be used. **Accessing `IsSome` and `Value` directly (especially the latter) is generally discouraged**. The constructor is internal to force you to use one of the named constructors explained below.
 
 ### Utility functions for the Option type
 
@@ -151,12 +151,11 @@ public static class Option
 }
 
 Option<string> someString = Option.Some("I have a value");
-Option<string> noString = Option.None<string>();
-
-Option<string> bound = someString.Bind(v => v + " today");
+Option<string> mapped = someString.Map(v => v + " today");
 // returns Option.Some("I have a value today")
 
-Option<string> defaulted = noString.DefaultValue("default value");
+Option<string> noString = Option.None<string>();
+string defaulted = noString.DefaultValue("default value");
 // returns "default value"
 ```
 
@@ -198,7 +197,7 @@ Option<int> found = new[] { 1, 2, 3, 4, 5 }.TryFind(i => i % 2 == 0);
 Like `Option<T>`, it is implemented as a value type because its usage is expected to be pervasive:
 
 ```csharp
-public abstract record Result<T, TError>
+public readonly record struct Result<T, TError>
 {
     public bool IsOk { get; }
     public T ResultValue { get; } // undefined if IsOk is false
@@ -207,11 +206,11 @@ public abstract record Result<T, TError>
     public U Match<U>(Func<TError, U> onError, Func<T, U> onOk);
     public void Match(Action<TError> onError, Action<T> onOk);
 
-    internal Result(bool isOk, T resultValue, TError errorValue)
+    internal Result(bool isOk, T resultValue, TError errorValue);
 }
 ```
 
-Properties are public for compatibility with test libraries, and to let to pattern match in those cases `Match` could not be used. **Accessing `IsOk`, `ResultValue` and `ErrorValue` (especially the latter two) directly is discouraged**. The constructor is internal to force you to use one of the named constructors explained below.
+Properties are public for compatibility with test libraries, and to let to use C# pattern matching in those cases `Match` could not be used. **Accessing `IsOk`, `ResultValue` and `ErrorValue` directly (especially the latter two) is generally discouraged**. The constructor is internal to force you to use one of the named constructors explained below.
 
 ### Utility functions for the Result type
 
@@ -227,14 +226,13 @@ public static class Result
     public static Result<T, U> MapError<T, TError, U>(this Result<T, TError> result, Func<TError, U> mapping);
 }
 
-var ok = new Result<string, int>.Ok("result value");
-var error = new Result<string, int>.Error(42);
+Result<string, int> ok = Result.Ok<string, int>("result value");
+Result<string, int> boundOk = ok.Bind(v => Result.Ok<string, int>("beautiful " + v));
+// returns Result.Ok<string, int>("beautiful result value")
 
-var boundOk = ok.Bind(v => "beautiful " + v);
-// returns new Results<string, int>.Ok("beautiful result value")
-
-var boundError = error.Bind(v => "beautiful " + v);
-// returns new Result<string, int>.Error(42), short-circuiting
+Result<string, int> error = Result.Error<string, int>(42);
+Result<string, int> boundError = error.Bind(v => Result.Ok<string, int>("beautiful " + v));
+// returns Result.Error<string, int>(42), short-circuiting
 ```
 
 ## Choice types
@@ -314,10 +312,12 @@ public static class PipeExtensions
         predicate(previous) ? next(previous) : previous;
 }
 
-var piped = 21.Pipe(v => v + 1).Pipe(v => v * 2);
+const int twenty = 20;
+
+int piped = twenty.Pipe(v => v + 1).Pipe(v => v * 2);
 // returns 42
 
-var maybePiped = 20.PipeIf(v => v < 10, v => v * 2);
+int maybePiped = twenty.PipeIf(v => v < 10, v => v * 2);
 // returns 20
 ```
 

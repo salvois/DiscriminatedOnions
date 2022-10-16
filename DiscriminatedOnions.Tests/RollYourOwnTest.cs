@@ -38,11 +38,11 @@ public static class RollYourOwnTest
         public record Rectangle(double Width, double Height) : Shape;
         public record Circle(double Radius) : Shape;
 
-        public U Match<U>(Func<double, double, U> onRectangle, Func<double, U> onCircle) =>
+        public U Match<U>(Func<Rectangle, U> onRectangle, Func<Circle, U> onCircle) =>
             this switch
             {
-                Rectangle(var width, var height) => onRectangle(width, height),
-                Circle(var radius) => onCircle(radius),
+                Rectangle r => onRectangle(r),
+                Circle c => onCircle(c),
                 _ => throw new ArgumentOutOfRangeException()
             };
 
@@ -59,8 +59,8 @@ public static class RollYourOwnTest
 
     private static double ComputeAreaUsingMatch(this Shape shape) =>
         shape.Match(
-            onRectangle: (w, h) => w * h,
-            onCircle: r => r * r * Math.PI);
+            onRectangle: r => r.Width * r.Height,
+            onCircle: c => c.Radius * c.Radius * Math.PI);
 
     [Test]
     public static void SwitchRectangle() => new Shape.Rectangle(10.0, 1.3).ComputeAreaUsingSwitch().Should().Be(10.0 * 1.3);
