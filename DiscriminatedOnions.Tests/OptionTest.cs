@@ -71,6 +71,12 @@ public static class OptionTest
     }
 
     [Test]
+    public static void ToString_Some() => Option.Some(42).ToString().Should().Be("Some(42)");
+
+    [Test]
+    public static void ToString_None() => Option.None<int>().ToString().Should().Be("None");
+
+    [Test]
     public static void Equality_Some() => Option.Some("value").Should().Be(Option.Some("value"));
 
     [Test]

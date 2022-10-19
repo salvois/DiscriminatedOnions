@@ -104,12 +104,15 @@ public readonly record struct Option<T>
 
     public U Match<U>(Func<U> onNone, Func<T, U> onSome);
     public void Match(Action onNone, Action<T> onSome);
+    public override string ToString();
 
     internal static readonly Option<T> None = new(false, default!);
     internal Option(bool isSome, T value);
 }
 ```
 Properties are public for compatibility with test libraries, and to let to use C# pattern matching in those cases `Match` could not be used. **Accessing `IsSome` and `Value` directly (especially the latter) is generally discouraged**. The constructor is internal to force you to use one of the named constructors explained below.
+
+A `ToString` override provides representations such as `"Some(Value)"` or `"None"` for debugging convenience.
 
 ### Utility functions for the Option type
 
@@ -120,33 +123,86 @@ The `Option` static class also provides named constructors to create `Option<T>`
 ```csharp
 public static class Option
 {
+    // Creates a new option containing Some(value)
     public static Option<T> Some<T>(T value);
+
+    // Returns an option representing None
     public static Option<T> None<T>();
 
+
+    // Returns binder(v) if option is Some(v) or None if it is None
     public static Option<U> Bind<T, U>(this Option<T> option, Func<T, Option<U>> binder);
+
+    // Returns true if option is Some(value) or false if it is None
     public static bool Contains<T>(this Option<T> option, T value);
+
+    // Returns 1 if option is Some(v) or 0 if it is None
     public static int Count<T>(this Option<T> option);
+
+    // Returns v if option is Some(v) or value if it is None
     public static T DefaultValue<T>(this Option<T> option, T value);
+
+    // Returns v if option is Some(v) or defThunk() if it is None
     public static T DefaultWith<T>(this Option<T> option, Func<T> defThunk);
+
+    // Returns predicate(v) if option is Some(v) or false if it is None
     public static bool Exists<T>(this Option<T> option, Func<T, bool> predicate);
+
+    // Returns predicate(v) if option is Some(v)
     public static Option<T> Filter<T>(this Option<T> option, Func<T, bool> predicate);
+
+    // Returns v if option is Some(Some(v))
     public static Option<T> Flatten<T>(this Option<Option<T>> option);
+
+    // Returns folder(initialState, v) if option is Some(v) or initialState if it is None
     public static TState Fold<T, TState>(this Option<T> option, TState initialState, Func<TState, T, TState> folder);
+
+    // Returns predicate(v) if option is Some(v) or true if it is None
     public static bool ForAll<T>(this Option<T> option, Func<T, bool> predicate);
+
+    // Returns v if option is Some(v) or throws an InvalidOperationException if it is None, discouraged
     public static T Get<T>(this Option<T> option);
+
+    // Returns true if option is None, discouraged
     public static bool IsNone<T>(this Option<T> option);
+
+    // Return true if option is Some(v), discouraged
     public static bool IsSome<T>(this Option<T> option);
+
+    // Executes action(v) if option is Some(v)
     public static void Iter<T>(this Option<T> option, Action<T> action);
+
+    // Returns Some(mapping(v)) if option is Some(v) or None if it is None
     public static Option<U> Map<T, U>(this Option<T> option, Func<T, U> mapping);
+
+    // Returns Some(mapping(v1, v2)) if options are Some(v1) and Some(v2) or None if at least one is None
     public static Option<U> Map2<T1, T2, U>(this (Option<T1>, Option<T2>) options, Func<T1, T2, U> mapping);
+
+    // Returns Some(mapping(v1, v2, v3)) if options are Some(v1), Some(v2) and Some(v3) or None if at least one is None
     public static Option<U> Map3<T1, T2, T3, U>(this (Option<T1>, Option<T2>, Option<T3>) options, Func<T1, T2, T3, U> mapping);
+
+    // Creates a new option containing Some(value) if value.HasValue
     public static Option<T> OfNullable<T>(T? value) where T : struct;
+
+    // Creates a new option containing Some(obj) if obj is not null
     public static Option<T> OfObj<T>(T? obj) where T : class;
+
+    // Returns option if option is Some(v) or ifNone if it is None
     public static Option<T> OrElse<T>(this Option<T> option, Option<T> ifNone);
+
+    // Returns option if option is Some(v) or ifNoneThunk() if it is None
     public static Option<T> OrElseWith<T>(this Option<T> option, Func<Option<T>> ifNoneThunk);
+
+    // Returns a single-element array containing v if option is Some(v) or an empty array if it is None
     public static T[] ToArray<T>(this Option<T> option);
+
+    // Returns a single-element enumerable containing v if option is Some(v) or an empty enumerable if it is None
     public static IEnumerable<T> ToEnumerable<T>(this Option<T> option);
+
+    // Returns a non-null value type v if option is Some(v) or null if it is None
     public static T? ToNullable<T>(this Option<T> option) where T : struct;
+
+    // Returns a non-null reference type v if option is Some(v) or null if it is None
     public static T? ToObj<T>(this Option<T> option) where T : class;
 }
 
@@ -166,17 +222,40 @@ An `OptionEnumerableExtensions` static class of extension methods is provided to
 ```csharp
 public static class OptionEnumerableExtensions
 {
+    // Returns chooser(v) for each element of source which is Some(v)
     public static IEnumerable<U> Choose<T, U>(this IEnumerable<T> source, Func<T, Option<U>> chooser);
+
+    // Returns chooser(v) for the first element of source which is Some(v), or throws KeyNotFoundException if not found
     public static U Pick<T, U>(this IEnumerable<T> source, Func<T, Option<U>> chooser);
+
+    // Returns Some(v) if there is exactly one element of source which is Some(v)
     public static Option<T> TryExactlyOne<T>(this IEnumerable<T> source);
+
+    // Returns Some(v) for the first Some(v) satisfying predicate(v)
     public static Option<T> TryFind<T>(this IEnumerable<T> source, Func<T, bool> predicate);
+
+    // Returns Some(v) for the last Some(v) satisfying predicate(v)
     public static Option<T> TryFindBack<T>(this IEnumerable<T> source, Func<T, bool> predicate);
+
+    // Returns the index of the first Some(v) satisfying predicate(v)
     public static Option<int> TryFindIndex<T>(this IEnumerable<T> source, Func<T, bool> predicate);
+
+    // Returns the index of the last Some(v) satifying predicate(v)
     public static Option<int> TryFindIndexBack<T>(this IEnumerable<T> source, Func<T, bool> predicate);
+
+    // Returns Some(v) if the first element is Some(v) or None if it is None
     public static Option<T> TryHead<T>(this IEnumerable<T> source);
+
+    // Returns Some(v) if the index-th element is Some(v) or None if it is None
     public static Option<T> TryItem<T>(this IEnumerable<T> source, int index);
+
+    // Returns Some(v) if the last element is Some(v) or None if it is None
     public static Option<T> TryLast<T>(this IEnumerable<T> source);
+
+    // Returns chooser(v) for the first element of source which is Some(v), or None if not found
     public static Option<U> TryPick<T, U>(this IEnumerable<T> source, Func<T, Option<U>> chooser);
+
+    // Returns an enumerable applying generator on an accumulated state until it returns None
     public static IEnumerable<T> Unfold<T, TState>(this TState state, Func<TState, Option<(T, TState)>> generator);
 }
 
@@ -205,12 +284,15 @@ public readonly record struct Result<T, TError>
 
     public U Match<U>(Func<TError, U> onError, Func<T, U> onOk);
     public void Match(Action<TError> onError, Action<T> onOk);
+    public override string ToString();
 
     internal Result(bool isOk, T resultValue, TError errorValue);
 }
 ```
 
 Properties are public for compatibility with test libraries, and to let to use C# pattern matching in those cases `Match` could not be used. **Accessing `IsOk`, `ResultValue` and `ErrorValue` directly (especially the latter two) is generally discouraged**. The constructor is internal to force you to use one of the named constructors explained below.
+
+A `ToString` override provides representations such as `"Ok(ResultValue)"` or `"Error(ErrorValue)"` for debugging convenience.
 
 ### Utility functions for the Result type
 
@@ -221,8 +303,20 @@ The `Bind` function is especially very convenient when chaining functions when t
 ```csharp
 public static class Result
 {
+    // Creates a new result containing Ok(resultValue)
+    public static Result<T, TError> Ok<T, TError>(T resultValue);
+
+    // Creates a new result containing Error(errorValue)
+    public static Result<T, TError> Error<T, TError>(TError errorValue);
+
+
+    // Returns binder(v) if result is Ok(v) or Error(e) if it is Error(e)
     public static Result<U, TError> Bind<T, TError, U>(this Result<T, TError> result, Func<T, Result<U, TError>> binder);
+
+    // Returns Ok(mapping(v)) is result is Ok(v) or Error(e) if it is Error(e)
     public static Result<U, TError> Map<T, TError, U>(this Result<T, TError> result, Func<T, U> mapping);
+
+    // Returns Error(mapping(e)) if result is Error(e) or Ok(v) if it is Ok(v)
     public static Result<T, U> MapError<T, TError, U>(this Result<T, TError> result, Func<TError, U> mapping);
 }
 

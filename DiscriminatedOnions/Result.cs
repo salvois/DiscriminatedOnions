@@ -50,6 +50,9 @@ public readonly record struct Result<T, TError>
         }
     }
 
+    public override string ToString() =>
+        IsOk ? $"Ok({ResultValue})" : $"Error({ErrorValue})";
+
     internal Result(bool isOk, T resultValue, TError errorValue)
     {
         IsOk = isOk;

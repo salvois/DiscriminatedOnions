@@ -42,6 +42,9 @@ public readonly record struct Option<T>
         if (IsSome) onSome(Value); else onNone();
     }
 
+    public override string ToString() =>
+        IsSome ? $"Some({Value})" : "None";
+
     internal static readonly Option<T> None = new(false, default!);
 
     internal Option(bool isSome, T value)

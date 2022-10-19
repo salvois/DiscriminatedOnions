@@ -78,6 +78,12 @@ public static class ResultTest
     }
 
     [Test]
+    public static void ToString_Ok() => Result.Ok<string, int>("resultValue").ToString().Should().Be("Ok(resultValue)");
+
+    [Test]
+    public static void ToString_Error() => Result.Error<string, int>(42).ToString().Should().Be("Error(42)");
+    
+    [Test]
     public static void Bind_Ok() =>
         Result.Ok<string, int>("resultValue")
             .Bind(v => Result.Ok<string, int>(v + "Altered"))
