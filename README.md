@@ -269,6 +269,25 @@ Option<int> found = new[] { 1, 2, 3, 4, 5 }.TryFind(i => i % 2 == 0);
 // returns Option.Some(2)
 ```
 
+### Utility functions augmenting common functionality with the Option type
+
+An `OptionExtensions` static class provides extension methods that help use the Option type in scenarios where nullable types or booleans are otherwise to be checked, for example when trying to get values out of a dictionary:
+
+```csharp
+public static class OptionExtensions
+{
+    // Returns Some(v) if dict contains key or None if it doesn't
+    public static Option<TValue> TryGetValue<TKey, TValue>(this Dictionary<TKey, TValue> dict, TKey key) where TKey : notnull;
+    public static Option<TValue> TryGetValue<TKey, TValue>(this ConcurrentDictionary<TKey, TValue> dict, TKey key) where TKey : notnull;
+    public static Option<TValue> TryGetValue<TKey, TValue>(this IDictionary<TKey, TValue> dict, TKey key);
+    public static Option<TValue> TryGetValue<TKey, TValue>(this IReadOnlyDictionary<TKey, TValue> dict, TKey key);
+}
+
+var dict = new Dictionary<int, string> { [42] = "The answer" };
+Option<string> value = dict.TryGetValue(42);
+// returns Option.Some("The answer")
+```
+
 ## Result type
 
 `Result<T, TError>` is intended to represent the result of an operation or validation, that can be either `Ok` or `Error`, both carrying a payload.

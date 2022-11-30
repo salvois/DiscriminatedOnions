@@ -68,6 +68,14 @@ public static class ReadMeExamples
     }
 
     [Test]
+    public static void OptionExtension_TryGetValue()
+    {
+        var dict = new Dictionary<int, string> { [42] = "The answer" };
+        Option<string> value = dict.TryGetValue(42);
+        value.Should().Be(Option.Some("The answer"));
+    }
+
+    [Test]
     public static void Result_Bind_Ok()
     {
         Result<string, int> ok = Result.Ok<string, int>("result value");
