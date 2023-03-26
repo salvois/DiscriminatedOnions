@@ -26,6 +26,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using FluentAssertions;
 using NUnit.Framework;
 
@@ -48,6 +49,16 @@ public static class ReadMeExamples
         Option<string> noString = Option.None<string>();
         string defaulted = noString.DefaultValue("default value");
         defaulted.Should().Be("default value");
+    }
+
+    [Test]
+    public static async Task Option_BindAsync_Some()
+    {
+        Option<string> someString = Option.Some("I have a value");
+        Option<string> asyncBound = await someString
+            .BindAsync(v => Task.FromResult(Option.Some(v + " altered")))
+            .Pipe(o => o.BindAsync(v => Task.FromResult(Option.Some(v + " two times"))));
+        asyncBound.Should().Be(Option.Some("I have a value altered two times"));
     }
 
     [Test]
@@ -89,6 +100,16 @@ public static class ReadMeExamples
         Result<string, int> error = Result.Error<string, int>(42);
         Result<string, int> boundError = error.Bind(v => Result.Ok<string, int>("beautiful " + v));
         boundError.Should().Be(Result.Error<string, int>(42));
+    }
+
+    [Test]
+    public static async Task Result_BindAsync_Ok()
+    {
+        Result<string, int> ok = Result.Ok<string, int>("result value");
+        Result<string, int> asyncBoundOk = await ok
+            .BindAsync(v => Task.FromResult(Result.Ok<string, int>("beautiful " + v)))
+            .Pipe(o => o.BindAsync(v => Task.FromResult(Result.Ok<string, int>("very " + v))));
+        asyncBoundOk.Should().Be(Result.Ok<string, int>("very beautiful result value"));
     }
 
     [Test]

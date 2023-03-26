@@ -10,6 +10,7 @@ I have written this library because I needed it and because it was fun, but it d
 
 ## Table of contents
 
+  - [Changelog](#changelog)
   - [Rolling your own discriminated unions](#rolling-your-own-discriminated-unions)
   - [Reference type vs. value type discriminated unions](#reference-type-vs-value-type-discriminated-unions)
   - [Option type](#option-type)
@@ -22,6 +23,12 @@ I have written this library because I needed it and because it was fun, but it d
   - [Unit type](#unit-type)
   - [Piping function calls](#piping-function-calls)
   - [License](#license)
+
+## Changelog
+
+* 1.2: Async versions of `bind`, `iter` and `map` for `Option` and `Result`
+* 1.1: `Option`-based `TryGetValue` for dictionaries
+* 1.0: Finalized API with `Option` and `Result` reimplemented as value types for better performance
 
 ## Rolling your own discriminated unions
 
@@ -118,6 +125,8 @@ A `ToString` override provides representations such as `"Some(Value)"` or `"None
 
 Together with the `Option<T>` type itself, a companion static class `Option` of utility functions is provided. For a full description of those functions please refer to the official documentation of the [F# Option module](https://fsharp.github.io/fsharp-core-docs/reference/fsharp-core-optionmodule.html).
 
+Moreover, some novel functions not included in the F# standard library are included, such as async versions that may be useful when working with I/O.
+
 The `Option` static class also provides named constructors to create `Option<T>` values. The named constructor for `Some` helps the compiler deduce the generic argument for `T` reducing some bolilerplate, whereas the named constructor for `None` returns a singleton instance for `T`.
 
 ```csharp
@@ -132,6 +141,7 @@ public static class Option
 
     // Returns binder(v) if option is Some(v) or None if it is None
     public static Option<U> Bind<T, U>(this Option<T> option, Func<T, Option<U>> binder);
+    public static Task<Option<U>> BindAsync<T, U>(this Option<T> option, Func<T, Task<Option<U>>> binder);
 
     // Returns true if option is Some(value) or false if it is None
     public static bool Contains<T>(this Option<T> option, T value);
@@ -171,9 +181,11 @@ public static class Option
 
     // Executes action(v) if option is Some(v)
     public static void Iter<T>(this Option<T> option, Action<T> action);
+    public static Task IterAsync<T>(this Option<T> option, Func<T, Task> action);
 
     // Returns Some(mapping(v)) if option is Some(v) or None if it is None
     public static Option<U> Map<T, U>(this Option<T> option, Func<T, U> mapping);
+    public static Task<Option<U>> MapAsync<T, U>(this Option<T> option, Func<T, Task<U>> mapping);
 
     // Returns Some(mapping(v1, v2)) if options are Some(v1) and Some(v2) or None if at least one is None
     public static Option<U> Map2<T1, T2, U>(this (Option<T1>, Option<T2>) options, Func<T1, T2, U> mapping);
@@ -213,7 +225,13 @@ Option<string> mapped = someString.Map(v => v + " today");
 Option<string> noString = Option.None<string>();
 string defaulted = noString.DefaultValue("default value");
 // returns "default value"
+
+Option<string> asyncBound = await someString
+    .BindAsync(v => Task.FromResult(Option.Some(v + " altered")))
+    .Pipe(o => o.BindAsync(v => Task.FromResult(Option.Some(v + " two times"))));
+// returns Option.Some("I have a value altered two times")
 ```
+Note how [Pipe](#piping-function-calls) has been used in the last example to remove async impedance mismatch.
 
 ### Utility functions for IEnumerable involving the Option type
 
@@ -317,6 +335,8 @@ A `ToString` override provides representations such as `"Ok(ResultValue)"` or `"
 
 Together with the `Result<T, TError>` type itself, a companion static class `Result` of utility functions is provided. Please refer to the official documentation of the [F# Result module](https://fsharp.github.io/fsharp-core-docs/reference/fsharp-core-resultmodule.html) for a full descrition of them.
 
+Moreover, some novel functions not included in the F# standard library are included, such as async versions that may be useful when working with I/O.
+
 The `Bind` function is especially very convenient when chaining functions when the result of the previous one becomes the input of the next one, something described as [Railway oriented programming](https://fsharpforfunandprofit.com/posts/recipe-part2/) in the famous [F# for Fun and Profit](https://fsharpforfunandprofit.com/) site.
 
 ```csharp
@@ -331,12 +351,15 @@ public static class Result
 
     // Returns binder(v) if result is Ok(v) or Error(e) if it is Error(e)
     public static Result<U, TError> Bind<T, TError, U>(this Result<T, TError> result, Func<T, Result<U, TError>> binder);
+    public static Task<Result<U, TError>> BindAsync<T, TError, U>(this Result<T, TError> result, Func<T, Task<Result<U, TError>>> binder);
 
     // Returns Ok(mapping(v)) is result is Ok(v) or Error(e) if it is Error(e)
     public static Result<U, TError> Map<T, TError, U>(this Result<T, TError> result, Func<T, U> mapping);
+    public static Task<Result<U, TError>> MapAsync<T, TError, U>(this Result<T, TError> result, Func<T, Task<U>> mapping);
 
     // Returns Error(mapping(e)) if result is Error(e) or Ok(v) if it is Ok(v)
     public static Result<T, U> MapError<T, TError, U>(this Result<T, TError> result, Func<TError, U> mapping);
+    public static Task<Result<T, U>> MapErrorAsync<T, TError, U>(this Result<T, TError> result, Func<TError, Task<U>> mapping);
 }
 
 Result<string, int> ok = Result.Ok<string, int>("result value");
@@ -346,7 +369,13 @@ Result<string, int> boundOk = ok.Bind(v => Result.Ok<string, int>("beautiful " +
 Result<string, int> error = Result.Error<string, int>(42);
 Result<string, int> boundError = error.Bind(v => Result.Ok<string, int>("beautiful " + v));
 // returns Result.Error<string, int>(42), short-circuiting
+
+Result<string, int> asyncBoundOk = await ok
+    .BindAsync(v => Task.FromResult(Result.Ok<string, int>("beautiful " + v)))
+    .Pipe(o => o.BindAsync(v => Task.FromResult(Result.Ok<string, int>("very " + v))));
+// returns Result.Ok<string, int>("very beautiful result value")
 ```
+Note how [Pipe](#piping-function-calls) has been used in the last example to remove async impedance mismatch.
 
 ## Choice types
 
@@ -376,6 +405,8 @@ public readonly record struct OrderId(int Value);
 ```
 
 This library provides no features to create such types, because the built-in feature of the language can be leveraged, but I encourage to try this technique to let the compiler stop you when you try to shoot yourself. A properly modeled domain can dramatically reduce nasty bugs caused by the so called "primitive obsession".
+
+**Caveat:** Instances of record structs may be created using the parameterless constructor, such as `new CustomerId()`, in that case the wrapped value will be initialized to its default value. This is built into the language and cannot be prevented, but should generally be avoided with the approach proposed here, because you could, for example, create a wrapped Svalue even if the wrapped type is a non-nullable reference type.
 
 ## Unit type
 
@@ -437,6 +468,8 @@ int maybePiped = twenty.PipeIf(v => v < 10, v => v * 2);
 `Pipe` is defined just like F#'s `|>`, that is the `previous` value is passed to the `next` lambda function, effectively inverting the order they are written. `PipeIf` calls the `next` lambda function only if the specified predicate returns true, allowing pipelines with optional steps.
 
 Both `Pipe` and `PipeIf` provide four overloads (not shown here for conciseness), where either `previous` or `next` are a `Task` that must be awaited, allowing mixed pipelines of synchronous and asynchronous steps.
+
+The async versions of `Pipe` may also be used to chain synchronous and asynchronous function involving `Option`s and `Result`s (see their examples).
 
 ## License
 
