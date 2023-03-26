@@ -24,6 +24,7 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
+using System.Threading.Tasks;
 using FluentAssertions;
 using NUnit.Framework;
 
@@ -82,7 +83,7 @@ public static class ResultTest
 
     [Test]
     public static void ToString_Error() => Result.Error<string, int>(42).ToString().Should().Be("Error(42)");
-    
+
     [Test]
     public static void Bind_Ok() =>
         Result.Ok<string, int>("resultValue")
@@ -100,6 +101,24 @@ public static class ResultTest
                 onError: e => (e, DummyResultValue),
                 onOk: v => (DummyErrorValue, v))
             .Should().Be((42, DummyResultValue));
+
+    [Test]
+    public static async Task BindAsync_Ok() =>
+        (await Result.Ok<string, int>("resultValue")
+            .BindAsync(v => Task.FromResult(Result.Ok<string, int>(v + "Altered")))
+            .Pipe(r => r.Match(
+                onError: e => (e, DummyResultValue),
+                onOk: v => (DummyErrorValue, v))))
+        .Should().Be((DummyErrorValue, "resultValueAltered"));
+
+    [Test]
+    public static async Task BindAsync_Error() =>
+        (await Result.Error<string, int>(42)
+            .BindAsync(v => Task.FromResult(Result.Ok<string, int>(v + "Altered")))
+            .Pipe(r => r.Match(
+                onError: e => (e, DummyResultValue),
+                onOk: v => (DummyErrorValue, v))))
+        .Should().Be((42, DummyResultValue));
 
     [Test]
     public static void Map_Ok() =>
@@ -120,6 +139,24 @@ public static class ResultTest
             .Should().Be((42, DummyResultValue));
 
     [Test]
+    public static async Task MapAsync_Ok() =>
+        (await Result.Ok<string, int>("resultValue")
+            .MapAsync(v => Task.FromResult(v + "Altered"))
+            .Pipe(r => r.Match(
+                onError: e => (e, DummyResultValue),
+                onOk: v => (DummyErrorValue, v))))
+        .Should().Be((DummyErrorValue, "resultValueAltered"));
+
+    [Test]
+    public static async Task MapAsync_Error() =>
+        (await Result.Error<string, int>(42)
+            .MapAsync(v => Task.FromResult(v + "Altered"))
+            .Pipe(r => r.Match(
+                onError: e => (e, DummyResultValue),
+                onOk: v => (DummyErrorValue, v))))
+        .Should().Be((42, DummyResultValue));
+
+    [Test]
     public static void MapError_Ok() =>
         Result.Ok<string, int>("resultValue")
             .MapError(e => e + 1)
@@ -136,4 +173,22 @@ public static class ResultTest
                 onError: e => (e, DummyResultValue),
                 onOk: v => (DummyErrorValue, v))
             .Should().Be((43, DummyResultValue));
+
+    [Test]
+    public static async Task MapErrorAsync_Ok() =>
+        (await Result.Ok<string, int>("resultValue")
+            .MapErrorAsync(e => Task.FromResult(e + 1))
+            .Pipe(r => r.Match(
+                onError: e => (e, DummyResultValue),
+                onOk: v => (DummyErrorValue, v))))
+        .Should().Be((DummyErrorValue, "resultValue"));
+
+    [Test]
+    public static async Task MapErrorAsync_Error() =>
+        (await Result.Error<string, int>(42)
+            .MapErrorAsync(e => Task.FromResult(e + 1))
+            .Pipe(r => r.Match(
+                onError: e => (e, DummyResultValue),
+                onOk: v => (DummyErrorValue, v))))
+        .Should().Be((43, DummyResultValue));
 }
