@@ -1,5 +1,5 @@
 DiscriminatedOnions - A stinky but tasty hack to emulate F#-like discriminated unions in C#
-Copyright 2022  Salvatore ISAJA
+Copyright 2022-2023  Salvatore ISAJA
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
 
