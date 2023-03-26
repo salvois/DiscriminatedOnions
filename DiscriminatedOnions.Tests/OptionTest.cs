@@ -25,6 +25,7 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 using System;
+using System.Threading.Tasks;
 using FluentAssertions;
 using NUnit.Framework;
 
@@ -101,15 +102,33 @@ public static class OptionTest
     public static void Bind_Some() =>
         Option.Some(GoodValue)
             .Bind(v => Option.Some(v + "Altered"))
+            .Bind(v => Option.Some(v + " two times"))
             .Match(onNone: () => DummyValue, onSome: v => v)
-            .Should().Be(GoodValue + "Altered");
+            .Should().Be(GoodValue + "Altered two times");
 
     [Test]
     public static void Bind_None() =>
         Option.None<string>()
             .Bind(v => Option.Some(v + "Altered"))
+            .Bind(v => Option.Some(v + " two times"))
             .Match(onNone: () => DummyValue, onSome: v => v)
             .Should().Be(DummyValue);
+
+    [Test]
+    public static async Task BindAsync_Some() =>
+        (await Option.Some(GoodValue)
+            .BindAsync(v => Task.FromResult(Option.Some(v + "Altered")))
+            .Pipe(o => o.BindAsync(v => Task.FromResult(Option.Some(v + " two times"))))
+            .Pipe(o => o.Match(onNone: () => DummyValue, onSome: v => v)))
+        .Should().Be(GoodValue + "Altered two times");
+
+    [Test]
+    public static async Task BindAsync_None() =>
+        (await Option.None<string>()
+            .BindAsync(v => Task.FromResult(Option.Some(v + "Altered")))
+            .Pipe(o => o.BindAsync(v => Task.FromResult(Option.Some(v + " two times"))))
+            .Pipe(o => o.Match(onNone: () => DummyValue, onSome: v => v)))
+        .Should().Be(DummyValue);
 
     [Test]
     public static void Contains_Some_Matching() => Option.Some("value").Contains("value").Should().BeTrue();
@@ -215,6 +234,30 @@ public static class OptionTest
     }
 
     [Test]
+    public static async Task IterAsync_Some()
+    {
+        string? found = null;
+        await Option.Some(GoodValue).IterAsync(v =>
+        {
+            found = v;
+            return Task.CompletedTask;
+        });
+        found.Should().Be(GoodValue);
+    }
+
+    [Test]
+    public static async Task IterAsync_None()
+    {
+        string? found = null;
+        await Option.None<string>().IterAsync(v =>
+        {
+            found = v;
+            return Task.CompletedTask;
+        });
+        found.Should().BeNull();
+    }
+
+    [Test]
     public static void Map_Some() =>
         Option.Some(GoodValue)
             .Map(v => v + "Altered")
@@ -227,6 +270,20 @@ public static class OptionTest
             .Map(v => v + "Altered")
             .Match(onNone: () => DummyValue, onSome: v => v)
             .Should().Be(DummyValue);
+
+    [Test]
+    public static async Task MapAsync_Some() =>
+        (await Option.Some(GoodValue)
+            .MapAsync(v => Task.FromResult(v + "Altered"))
+            .Pipe(o => o.Match(onNone: () => DummyValue, onSome: v => v)))
+        .Should().Be(GoodValue + "Altered");
+
+    [Test]
+    public static async Task MapAsync_None() =>
+        (await Option.None<string>()
+            .MapAsync(v => Task.FromResult(v + "Altered"))
+            .Pipe(o => o.Match(onNone: () => DummyValue, onSome: v => v)))
+        .Should().Be(DummyValue);
 
     [Test]
     public static void Map2_Some_Some() =>

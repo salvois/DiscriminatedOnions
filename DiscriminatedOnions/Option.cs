@@ -26,6 +26,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace DiscriminatedOnions;
 
@@ -58,9 +59,13 @@ public static class Option
 {
     public static Option<T> Some<T>(T value) => new(true, value);
     public static Option<T> None<T>() => Option<T>.None;
+    public static Task<Option<T>> TaskNone<T>() => Task.FromResult(Option<T>.None);
 
     public static Option<U> Bind<T, U>(this Option<T> option, Func<T, Option<U>> binder) =>
         option.Match(None<U>, binder);
+
+    public static Task<Option<U>> BindAsync<T, U>(this Option<T> option, Func<T, Task<Option<U>>> binder) =>
+        option.Match(TaskNone<U>, binder);
 
     public static bool Contains<T>(this Option<T> option, T value) =>
         option.Match(() => false, v => Equals(v, value));
@@ -104,8 +109,14 @@ public static class Option
             action(v);
     }
 
+    public static Task IterAsync<T>(this Option<T> option, Func<T, Task> action) =>
+        option is { IsSome: true, Value: var v } ? action(v) : Task.CompletedTask;
+
     public static Option<U> Map<T, U>(this Option<T> option, Func<T, U> mapping) =>
         option.Match(None<U>, v => Some(mapping(v)));
+
+    public static Task<Option<U>> MapAsync<T, U>(this Option<T> option, Func<T, Task<U>> mapping) =>
+        option.Match(TaskNone<U>, async v => Some(await mapping(v)));
 
     public static Option<U> Map2<T1, T2, U>(this (Option<T1>, Option<T2>) options, Func<T1, T2, U> mapping) =>
         options switch
