@@ -121,6 +121,24 @@ public static class ResultTest
         .Should().Be((42, DummyResultValue));
 
     [Test]
+    public static async Task BindAsync_AsyncInput_Ok() =>
+        (await Task.FromResult(Result.Ok<string, int>("resultValue"))
+            .BindAsync(v => Task.FromResult(Result.Ok<string, int>(v + "Altered")))
+            .Pipe(r => r.Match(
+                onError: e => (e, DummyResultValue),
+                onOk: v => (DummyErrorValue, v))))
+        .Should().Be((DummyErrorValue, "resultValueAltered"));
+
+    [Test]
+    public static async Task BindAsync_AsyncInput_Error() =>
+        (await Task.FromResult(Result.Error<string, int>(42))
+            .BindAsync(v => Task.FromResult(Result.Ok<string, int>(v + "Altered")))
+            .Pipe(r => r.Match(
+                onError: e => (e, DummyResultValue),
+                onOk: v => (DummyErrorValue, v))))
+        .Should().Be((42, DummyResultValue));
+
+    [Test]
     public static void Map_Ok() =>
         Result.Ok<string, int>("resultValue")
             .Map(v => v + "Altered")

@@ -106,9 +106,8 @@ public static class ReadMeExamples
     public static async Task Result_BindAsync_Ok()
     {
         Result<string, int> ok = Result.Ok<string, int>("result value");
-        Result<string, int> asyncBoundOk = await ok
-            .BindAsync(v => Task.FromResult(Result.Ok<string, int>("beautiful " + v)))
-            .Pipe(o => o.BindAsync(v => Task.FromResult(Result.Ok<string, int>("very " + v))));
+        var bindAsyncResult = await ok.BindAsync(v => Task.FromResult(Result.Ok<string, int>("beautiful " + v)));
+        Result<string, int> asyncBoundOk = await bindAsyncResult.Pipe(o => o.BindAsync(v => Task.FromResult(Result.Ok<string, int>("very " + v))));
         asyncBoundOk.Should().Be(Result.Ok<string, int>("very beautiful result value"));
     }
 
