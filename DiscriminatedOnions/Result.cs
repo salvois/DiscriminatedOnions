@@ -73,6 +73,12 @@ public static class Result
     public static Result<U, TError> Bind<T, TError, U>(this Result<T, TError> result, Func<T, Result<U, TError>> binder) =>
         result.Match(Error<U, TError>, binder);
 
+    public static async Task<Result<U, TError>> BindAsync<T, TError, U>(this Task<Result<T, TError>> result, Func<T, Task<Result<U, TError>>> binder)
+    {
+        var actualResult = await result;
+        return await actualResult.Match(e => Task.FromResult(Error<U, TError>(e)), binder);
+    }
+
     public static Task<Result<U, TError>> BindAsync<T, TError, U>(this Result<T, TError> result, Func<T, Task<Result<U, TError>>> binder) =>
         result.Match(e => Task.FromResult(Error<U, TError>(e)), binder);
 
