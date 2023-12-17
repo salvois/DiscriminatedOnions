@@ -356,4 +356,16 @@ public static class OptionTest
 
     [Test]
     public static void ToObj_Null() => Option.None<string>().ToObj().Should().BeNull();
+
+    [Test]
+    public static void ToOption_ValueType_NotNull() => ((int?)42).ToOption().Should().Be(Option.Some(42));
+
+    [Test]
+    public static void ToOption_ValueType_Null() => ((int?)null).ToOption().Should().Be(Option.None<int>());
+
+    [Test]
+    public static void ToOption_ReferenceType_NotNull() => GoodValue.ToOption().Should().Be(Option.Some(GoodValue));
+
+    [Test]
+    public static void ToOption_ReferenceType_Null() => ((string?)null).ToOption().Should().Be(Option.None<string>());
 }

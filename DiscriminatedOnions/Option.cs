@@ -158,4 +158,10 @@ public static class Option
 
     public static T? ToObj<T>(this Option<T> option) where T : class =>
         option.Match(() => (T?)null, v => v);
+
+    public static Option<T> ToOption<T>(this T? value) where T : struct =>
+        OfNullable(value);
+
+    public static Option<T> ToOption<T>(this T? obj) where T : class =>
+        OfObj(obj);
 }
