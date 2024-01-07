@@ -30,6 +30,7 @@ using System.Linq;
 
 namespace DiscriminatedOnions;
 
+/// Helpers to work with IReadOnlyDictionary
 public static class ReadOnlyDictionary
 {
     private static class EmptyDictionary<TKey, TValue> where TKey : notnull
@@ -37,12 +38,15 @@ public static class ReadOnlyDictionary
         public static readonly IReadOnlyDictionary<TKey, TValue> Value = new Dictionary<TKey, TValue>();
     }
 
+    /// Like Enumerable.ToDictionary() but casts the result to IReadOnlyDictionary
     public static IReadOnlyDictionary<TKey, TValue> ToReadOnlyDictionary<T, TKey, TValue>(this IEnumerable<T> source, Func<T, TKey> keySelector, Func<T, TValue> valueSelector) where TKey : notnull =>
         source.ToDictionary(keySelector, valueSelector);
 
+    /// Like Enumerable.ToDictionary() but casts the result to IReadOnlyDictionary
     public static IReadOnlyDictionary<TKey, T> ToReadOnlyDictionary<T, TKey>(this IEnumerable<T> source, Func<T, TKey> keySelector) where TKey : notnull =>
         source.ToDictionary(keySelector);
 
+    /// Returns a singleton empty IReadOnlyDictionary
     public static IReadOnlyDictionary<TKey, TValue> Empty<TKey, TValue>() where TKey : notnull =>
         EmptyDictionary<TKey, TValue>.Value;
 }

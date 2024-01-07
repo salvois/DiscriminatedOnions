@@ -31,10 +31,13 @@ using System.Linq;
 
 namespace DiscriminatedOnions;
 
+/// Read-only collection (eager) of elements guaranteed to contain at least one element
 public interface INonEmptyCollection<out T> : INonEmptyEnumerable<T>, IReadOnlyCollection<T> { }
 
+/// Utility functions to work on INonEmptyCollection
 public static class NonEmptyCollection
 {
+    /// Returns Some INonEmptyCollection if collection is not empty, or None if collection is empty
     public static Option<INonEmptyCollection<T>> TryCreateNonEmptyCollection<T>(this IReadOnlyCollection<T> collection) =>
         collection.Any()
             ? Option.Some<INonEmptyCollection<T>>(new NonEmptyCollection<T>(collection))

@@ -29,16 +29,19 @@ using System.Linq;
 
 namespace DiscriminatedOnions;
 
+/// Helpers to work with IReadOnlySet
 public static class ReadOnlySet
 {
     private static class EmptySet<T>
     {
         public static readonly IReadOnlySet<T> Value = new HashSet<T>();
-    } 
+    }
 
+    /// Like Enumerable.ToHashSet() but casts the result to IReadOnlySet
     public static IReadOnlySet<T> ToReadOnlySet<T>(this IEnumerable<T> source) =>
         source.ToHashSet();
 
+    /// Returns a singleton empty IReadOnlySet
     public static IReadOnlyCollection<T> Empty<T>() =>
         EmptySet<T>.Value;
 }

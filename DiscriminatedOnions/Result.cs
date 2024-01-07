@@ -29,6 +29,7 @@ using System.Threading.Tasks;
 
 namespace DiscriminatedOnions;
 
+/// Union type that can represent either Ok(resultValue) or Error(errorValue)
 public readonly record struct Result<T, TError>
 {
     public bool IsOk { get; }
@@ -62,29 +63,38 @@ public readonly record struct Result<T, TError>
     }
 }
 
+/// Utility functions for the Result type
 public static class Result
 {
+    /// Creates a new result containing Ok(resultValue)
     public static Result<T, TError> Ok<T, TError>(T resultValue) =>
         new(true, resultValue, default!);
 
+    /// Creates a new result containing Error(errorValue)
     public static Result<T, TError> Error<T, TError>(TError errorValue) =>
         new(false, default!, errorValue);
 
+    /// Returns binder(v) if result is Ok(v) or Error(e) if it is Error(e)
     public static Result<U, TError> Bind<T, TError, U>(this Result<T, TError> result, Func<T, Result<U, TError>> binder) =>
         result.Match(Error<U, TError>, binder);
 
+    /// Returns binder(v) if result is Ok(v) or Error(e) if it is Error(e)
     public static Task<Result<U, TError>> BindAsync<T, TError, U>(this Result<T, TError> result, Func<T, Task<Result<U, TError>>> binder) =>
         result.Match(e => Task.FromResult(Error<U, TError>(e)), binder);
 
+    /// Returns Ok(mapping(v)) is result is Ok(v) or Error(e) if it is Error(e)
     public static Result<U, TError> Map<T, TError, U>(this Result<T, TError> result, Func<T, U> mapping) =>
         result.Match(Error<U, TError>, v => Ok<U, TError>(mapping(v)));
 
+    /// Returns Ok(mapping(v)) is result is Ok(v) or Error(e) if it is Error(e)
     public static Task<Result<U, TError>> MapAsync<T, TError, U>(this Result<T, TError> result, Func<T, Task<U>> mapping) =>
         result.Match(e => Task.FromResult(Error<U, TError>(e)), async v => Ok<U, TError>(await mapping(v)));
 
+    /// Returns Error(mapping(e)) if result is Error(e) or Ok(v) if it is Ok(v)
     public static Result<T, U> MapError<T, TError, U>(this Result<T, TError> result, Func<TError, U> mapping) =>
         result.Match(e => Error<T, U>(mapping(e)), Ok<T, U>);
 
+    /// Returns Error(mapping(e)) if result is Error(e) or Ok(v) if it is Ok(v)
     public static Task<Result<T, U>> MapErrorAsync<T, TError, U>(this Result<T, TError> result, Func<TError, Task<U>> mapping) =>
         result.Match(async e => Error<T, U>(await mapping(e)), v => Task.FromResult(Ok<T, U>(v)));
 }

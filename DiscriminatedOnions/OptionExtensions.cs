@@ -29,17 +29,22 @@ using System.Collections.Generic;
 
 namespace DiscriminatedOnions;
 
+/// Utility functions augmenting common functionality with the Option type
 public static class OptionExtensions
 {
+    /// Returns Some(v) if dict contains key or None if it doesn't
     public static Option<TValue> TryGetValue<TKey, TValue>(this Dictionary<TKey, TValue> dict, TKey key) where TKey : notnull =>
         ((IReadOnlyDictionary<TKey, TValue>)dict).TryGetValue(key);
 
+    /// Returns Some(v) if dict contains key or None if it doesn't
     public static Option<TValue> TryGetValue<TKey, TValue>(this ConcurrentDictionary<TKey, TValue> dict, TKey key) where TKey : notnull =>
         ((IReadOnlyDictionary<TKey, TValue>)dict).TryGetValue(key);
 
+    /// Returns Some(v) if dict contains key or None if it doesn't
     public static Option<TValue> TryGetValue<TKey, TValue>(this IDictionary<TKey, TValue> dict, TKey key) =>
         dict.TryGetValue(key, out var value) ? Option.Some(value) : Option.None<TValue>();
 
+    /// Returns Some(v) if dict contains key or None if it doesn't
     public static Option<TValue> TryGetValue<TKey, TValue>(this IReadOnlyDictionary<TKey, TValue> dict, TKey key) =>
         dict.TryGetValue(key, out var value) ? Option.Some(value) : Option.None<TValue>();
 }

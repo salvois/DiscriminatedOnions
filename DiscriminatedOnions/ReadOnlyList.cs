@@ -30,11 +30,14 @@ using System.Linq;
 
 namespace DiscriminatedOnions;
 
+/// Helpers to work with IReadOnlyList
 public static class ReadOnlyList
 {
+    /// Like Enumerable.ToList() but casts the result to IReadOnlyList
     public static IReadOnlyList<T> ToReadOnlyList<T>(this IEnumerable<T> source) =>
         source.ToList();
 
+    /// Returns a singleton empty IReadOnlyList
     public static IReadOnlyList<T> Empty<T>() =>
         Array.Empty<T>();
 }

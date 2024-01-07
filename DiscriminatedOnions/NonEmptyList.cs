@@ -31,10 +31,13 @@ using System.Linq;
 
 namespace DiscriminatedOnions;
 
+/// Read-only collection (eager) of elements that can be accessed by index, guaranteed to contain at least one element
 public interface INonEmptyList<out T> : INonEmptyCollection<T>, IReadOnlyList<T> { }
 
+/// Utility functions to work on INonEmptyList
 public static class NonEmptyList
 {
+    /// Returns Some INonEmptyList if list is not empty, or None if list is empty
     public static Option<INonEmptyList<T>> TryCreateNonEmptyList<T>(this IReadOnlyList<T> list) =>
         list.Any()
             ? Option.Some<INonEmptyList<T>>(new NonEmptyList<T>(list))

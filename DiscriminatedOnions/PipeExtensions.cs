@@ -31,27 +31,35 @@ namespace DiscriminatedOnions;
 
 public static class PipeExtensions
 {
+    /// Returns next(previous)
     public static TOut Pipe<TIn, TOut>(this TIn previous, Func<TIn, TOut> next) =>
         next(previous);
 
+    /// Returns next(previous) awaiting
     public static async Task<TOut> Pipe<TIn, TOut>(this TIn previous, Func<TIn, Task<TOut>> next) =>
         await next(previous);
 
+    /// Returns next(previous) awaiting
     public static async Task<TOut> Pipe<TIn, TOut>(this Task<TIn> previous, Func<TIn, TOut> next) =>
         next(await previous);
 
+    /// Returns next(previous) awaiting
     public static async Task<TOut> Pipe<TIn, TOut>(this Task<TIn> previous, Func<TIn, Task<TOut>> next) =>
         await next(await previous);
 
+    /// Returns next(previous) if predicate(previous) is true otherwise previous is passed through
     public static T PipeIf<T>(this T previous, Func<T, bool> predicate, Func<T, T> next) =>
         predicate(previous) ? next(previous) : previous;
 
+    /// Returns next(previous), awaiting, if predicate(previous) is true otherwise previous is passed through
     public static async Task<T> PipeIf<T>(this T previous, Func<T, bool> predicate, Func<T, Task<T>> next) =>
         predicate(previous) ? await next(previous) : previous;
 
+    /// Returns next(previous), awaiting, if predicate(previous) is true otherwise previous is passed through
     public static async Task<T> PipeIf<T>(this Task<T> previous, Func<T, bool> predicate, Func<T, T> next) =>
         PipeIf(await previous, predicate, next);
 
+    /// Returns next(previous), awaiting, if predicate(previous) is true otherwise previous is passed through
     public static async Task<T> PipeIf<T>(this Task<T> previous, Func<T, bool> predicate, Func<T, Task<T>> next) =>
         await PipeIf(await previous, predicate, next);
 }

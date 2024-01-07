@@ -29,8 +29,10 @@ using System.Collections.Generic;
 
 namespace DiscriminatedOnions;
 
+/// Utility functions for IEnumerable involving the Option type
 public static class OptionEnumerableExtensions
 {
+    /// Returns chooser(v) for each element of source which is Some(v)
     public static IEnumerable<U> Choose<T, U>(this IEnumerable<T> source, Func<T, Option<U>> chooser)
     {
         foreach (var item in source)
@@ -38,6 +40,7 @@ public static class OptionEnumerableExtensions
                 yield return v;
     }
 
+    /// Returns chooser(v) for the first element of source which is Some(v), or throws KeyNotFoundException if not found
     public static U Pick<T, U>(this IEnumerable<T> source, Func<T, Option<U>> chooser)
     {
         foreach (var item in source)
@@ -46,6 +49,7 @@ public static class OptionEnumerableExtensions
         throw new KeyNotFoundException();
     }
 
+    /// Returns Some(v) if there is exactly one element of source which is Some(v)
     public static Option<T> TryExactlyOne<T>(this IEnumerable<T> source)
     {
         using var enumerator = source.GetEnumerator();
@@ -58,6 +62,7 @@ public static class OptionEnumerableExtensions
         return Option.None<T>();
     }
 
+    /// Returns Some(v) for the first Some(v) satisfying predicate(v)
     public static Option<T> TryFind<T>(this IEnumerable<T> source, Func<T, bool> predicate)
     {
         foreach (var item in source)
@@ -66,6 +71,7 @@ public static class OptionEnumerableExtensions
         return Option.None<T>();
     }
 
+    /// Returns Some(v) for the last Some(v) satisfying predicate(v)
     public static Option<T> TryFindBack<T>(this IEnumerable<T> source, Func<T, bool> predicate)
     {
         var option = Option.None<T>();
@@ -75,6 +81,7 @@ public static class OptionEnumerableExtensions
         return option;
     }
 
+    /// Returns the index of the first Some(v) satisfying predicate(v)
     public static Option<int> TryFindIndex<T>(this IEnumerable<T> source, Func<T, bool> predicate)
     {
         var count = 0;
@@ -87,6 +94,7 @@ public static class OptionEnumerableExtensions
         return Option.None<int>();
     }
 
+    /// Returns the index of the last Some(v) satisfying predicate(v)
     public static Option<int> TryFindIndexBack<T>(this IEnumerable<T> source, Func<T, bool> predicate)
     {
         var option = Option.None<int>();
@@ -100,6 +108,7 @@ public static class OptionEnumerableExtensions
         return option;
     }
 
+    /// Returns Some(v) if the first element is Some(v) or None if it is None
     public static Option<T> TryHead<T>(this IEnumerable<T> source)
     {
         using var enumerator = source.GetEnumerator();
@@ -108,6 +117,7 @@ public static class OptionEnumerableExtensions
             : Option.None<T>();
     }
 
+    /// Returns Some(v) if the index-th element is Some(v) or None if it is None
     public static Option<T> TryItem<T>(this IEnumerable<T> source, int index)
     {
         var count = 0;
@@ -122,6 +132,7 @@ public static class OptionEnumerableExtensions
         return Option.None<T>();
     }
 
+    /// Returns Some(v) if the last element is Some(v) or None if it is None
     public static Option<T> TryLast<T>(this IEnumerable<T> source)
     {
         var option = Option.None<T>();
@@ -130,6 +141,7 @@ public static class OptionEnumerableExtensions
         return option;
     }
 
+    /// Returns chooser(v) for the first element of source which is Some(v), or None if not found
     public static Option<U> TryPick<T, U>(this IEnumerable<T> source, Func<T, Option<U>> chooser)
     {
         foreach (var item in source)
@@ -138,6 +150,7 @@ public static class OptionEnumerableExtensions
         return Option.None<U>();
     }
 
+    /// Returns an enumerable applying generator on an accumulated state until it returns None
     public static IEnumerable<T> Unfold<T, TState>(this TState state, Func<TState, Option<(T, TState)>> generator)
     {
         var currentState = state;
