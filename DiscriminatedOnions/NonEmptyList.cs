@@ -25,26 +25,36 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 using System;
-using FluentAssertions;
-using NUnit.Framework;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 
-namespace DiscriminatedOnions.Tests;
+namespace DiscriminatedOnions;
 
-[TestFixture]
-public static class NonEmptyCollectionTest
+public interface INonEmptyList<out T> : INonEmptyCollection<T>, IReadOnlyList<T> { }
+
+public static class NonEmptyList
 {
-    [Test]
-    public static void TryCreateNonEmptyCollection_Empty() =>
-        Array.Empty<int>().TryCreateNonEmptyCollection()
-            .Should().Be(Option.None<INonEmptyCollection<int>>());
+    public static Option<INonEmptyList<T>> TryCreateNonEmptyList<T>(this IReadOnlyList<T> list) =>
+        list.Any()
+            ? Option.Some<INonEmptyList<T>>(new NonEmptyList<T>(list))
+            : Option.None<INonEmptyList<T>>();
+}
 
-    [Test]
-    public static void TryCreateNonEmptyCollection_NonEmpty() =>
-        new[] { 1, 2 }.TryCreateNonEmptyCollection()
-            .Should().BeAssignableTo<Option<INonEmptyCollection<int>>>().And.BeEquivalentTo(Option.Some(new[] { 1, 2 }), o => o.WithStrictOrdering());
+internal readonly record struct NonEmptyList<T> : INonEmptyList<T>
+{
+    private readonly IReadOnlyList<T> _elements;
 
-    [Test]
-    public static void Count() =>
-        NonEmptyEnumerable.Of(1, 2, 3).ToNonEmptyCollection().Count
-            .Should().Be(3);
+    internal NonEmptyList(IReadOnlyList<T> elements) =>
+        _elements = elements.Any()
+            ? elements
+            : throw new ArgumentException("Empty list used to construct a NonEmptyList. This should never happen.");
+
+    public IEnumerator<T> GetEnumerator() => _elements.GetEnumerator();
+
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+    public int Count => _elements.Count;
+
+    public T this[int index] => _elements[index];
 }

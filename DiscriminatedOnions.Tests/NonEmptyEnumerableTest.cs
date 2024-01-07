@@ -66,4 +66,9 @@ public static class NonEmptyEnumerableTest
     public static void ToNonEmptyCollection() =>
         NonEmptyEnumerable.Of(1, 2).ToNonEmptyCollection()
             .Should().BeAssignableTo<INonEmptyCollection<int>>().And.BeEquivalentTo(new[] { 1, 2 }, o => o.WithStrictOrdering());
+
+    [Test]
+    public static void ToNonEmptyList() =>
+        NonEmptyEnumerable.Of(1, 2).ToNonEmptyList()
+            .Should().BeAssignableTo<INonEmptyList<int>>().And.BeEquivalentTo(new[] { 1, 2 }, o => o.WithStrictOrdering());
 }

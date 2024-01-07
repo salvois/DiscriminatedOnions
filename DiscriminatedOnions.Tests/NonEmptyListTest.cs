@@ -1,4 +1,5 @@
-﻿/*
+﻿
+/*
 DiscriminatedOnions - A stinky but tasty hack to emulate F#-like discriminated unions in C#
 
 Copyright 2022-2023 Salvatore ISAJA. All rights reserved.
@@ -31,20 +32,34 @@ using NUnit.Framework;
 namespace DiscriminatedOnions.Tests;
 
 [TestFixture]
-public static class NonEmptyCollectionTest
+public static class NonEmptyListTest
 {
     [Test]
-    public static void TryCreateNonEmptyCollection_Empty() =>
-        Array.Empty<int>().TryCreateNonEmptyCollection()
-            .Should().Be(Option.None<INonEmptyCollection<int>>());
+    public static void TryCreateNonEmptyList_Empty() =>
+        Array.Empty<int>().TryCreateNonEmptyList()
+            .Should().Be(Option.None<INonEmptyList<int>>());
 
     [Test]
-    public static void TryCreateNonEmptyCollection_NonEmpty() =>
-        new[] { 1, 2 }.TryCreateNonEmptyCollection()
-            .Should().BeAssignableTo<Option<INonEmptyCollection<int>>>().And.BeEquivalentTo(Option.Some(new[] { 1, 2 }), o => o.WithStrictOrdering());
+    public static void TryCreateNonEmptyList_NonEmpty() =>
+        new[] { 1, 2 }.TryCreateNonEmptyList()
+            .Should().BeAssignableTo<Option<INonEmptyList<int>>>().And.BeEquivalentTo(Option.Some(new[] { 1, 2 }), o => o.WithStrictOrdering());
 
     [Test]
     public static void Count() =>
-        NonEmptyEnumerable.Of(1, 2, 3).ToNonEmptyCollection().Count
+        NonEmptyEnumerable.Of(1, 2, 3).ToNonEmptyList().Count
             .Should().Be(3);
+
+    [TestCase(0, 'a')]
+    [TestCase(1, 'b')]
+    [TestCase(2, 'c')]
+    public static void Index(int index, char expected) =>
+        NonEmptyEnumerable.Of('a', 'b', 'c').ToNonEmptyList()[index]
+            .Should().Be(expected);
+
+    [Test]
+    public static void Index_OutOfBound()
+    {
+        var act = () => NonEmptyEnumerable.Of('a', 'b', 'c').ToNonEmptyList()[4];
+        act.Should().Throw<ArgumentOutOfRangeException>();
+    }
 }

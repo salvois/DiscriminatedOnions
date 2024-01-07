@@ -53,6 +53,9 @@ public static class NonEmptyEnumerable
 
     public static INonEmptyCollection<T> ToNonEmptyCollection<T>(this INonEmptyEnumerable<T> source) =>
         new NonEmptyCollection<T>(source.AsEnumerable().ToList());
+
+    public static INonEmptyList<T> ToNonEmptyList<T>(this INonEmptyEnumerable<T> source) =>
+        new NonEmptyList<T>(source.AsEnumerable().ToList());
 }
 
 internal readonly record struct NonEmptyEnumerable<T> : INonEmptyEnumerable<T>
