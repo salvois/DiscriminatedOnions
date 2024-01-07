@@ -132,90 +132,99 @@ The `Option` static class also provides named constructors to create `Option<T>`
 ```csharp
 public static class Option
 {
-    // Creates a new option containing Some(value)
+    /// Creates a new option containing Some(value)
     public static Option<T> Some<T>(T value);
 
-    // Returns an option representing None
+    /// Returns an option representing None
     public static Option<T> None<T>();
 
+    /// Returns an option representing None wrapped in a Task
+    public static Task<Option<T>> TaskNone<T>();
 
-    // Returns binder(v) if option is Some(v) or None if it is None
+
+    /// Returns binder(v) if option is Some(v) or None if it is None
     public static Option<U> Bind<T, U>(this Option<T> option, Func<T, Option<U>> binder);
     public static Task<Option<U>> BindAsync<T, U>(this Option<T> option, Func<T, Task<Option<U>>> binder);
 
-    // Returns true if option is Some(value) or false if it is None
+    /// Returns true if option is Some(value) or false if it is None
     public static bool Contains<T>(this Option<T> option, T value);
 
-    // Returns 1 if option is Some(v) or 0 if it is None
+    /// Returns 1 if option is Some(v) or 0 if it is None
     public static int Count<T>(this Option<T> option);
 
-    // Returns v if option is Some(v) or value if it is None
+    /// Returns v if option is Some(v) or value if it is None
     public static T DefaultValue<T>(this Option<T> option, T value);
 
-    // Returns v if option is Some(v) or defThunk() if it is None
+    /// Returns v if option is Some(v) or defThunk() if it is None
     public static T DefaultWith<T>(this Option<T> option, Func<T> defThunk);
 
-    // Returns predicate(v) if option is Some(v) or false if it is None
+    /// Returns predicate(v) if option is Some(v) or false if it is None
     public static bool Exists<T>(this Option<T> option, Func<T, bool> predicate);
 
-    // Returns predicate(v) if option is Some(v)
+    /// Returns option if option is Some(v) and predicate(v) is true
     public static Option<T> Filter<T>(this Option<T> option, Func<T, bool> predicate);
 
-    // Returns v if option is Some(Some(v))
+    /// Returns Some(v) if option is Some(Some(v))
     public static Option<T> Flatten<T>(this Option<Option<T>> option);
 
-    // Returns folder(initialState, v) if option is Some(v) or initialState if it is None
+    /// Returns folder(initialState, v) if option is Some(v) or initialState if it is None
     public static TState Fold<T, TState>(this Option<T> option, TState initialState, Func<TState, T, TState> folder);
 
-    // Returns predicate(v) if option is Some(v) or true if it is None
+    /// Returns predicate(v) if option is Some(v) or true if it is None
     public static bool ForAll<T>(this Option<T> option, Func<T, bool> predicate);
 
-    // Returns v if option is Some(v) or throws an InvalidOperationException if it is None, discouraged
+    /// Returns v if option is Some(v) or throws an InvalidOperationException if it is None, discouraged
     public static T Get<T>(this Option<T> option);
 
-    // Returns true if option is None, discouraged
+    /// Returns true if option is None, discouraged
     public static bool IsNone<T>(this Option<T> option);
 
-    // Return true if option is Some(v), discouraged
+    /// Return true if option is Some(v), discouraged
     public static bool IsSome<T>(this Option<T> option);
 
-    // Executes action(v) if option is Some(v)
+    /// Executes action(v) if option is Some(v)
     public static void Iter<T>(this Option<T> option, Action<T> action);
     public static Task IterAsync<T>(this Option<T> option, Func<T, Task> action);
 
-    // Returns Some(mapping(v)) if option is Some(v) or None if it is None
+    /// Returns Some(mapping(v)) if option is Some(v) or None if it is None
     public static Option<U> Map<T, U>(this Option<T> option, Func<T, U> mapping);
     public static Task<Option<U>> MapAsync<T, U>(this Option<T> option, Func<T, Task<U>> mapping);
 
-    // Returns Some(mapping(v1, v2)) if options are Some(v1) and Some(v2) or None if at least one is None
+    /// Returns Some(mapping(v1, v2)) if options are Some(v1) and Some(v2) or None if at least one is None
     public static Option<U> Map2<T1, T2, U>(this (Option<T1>, Option<T2>) options, Func<T1, T2, U> mapping);
 
-    // Returns Some(mapping(v1, v2, v3)) if options are Some(v1), Some(v2) and Some(v3) or None if at least one is None
+    /// Returns Some(mapping(v1, v2, v3)) if options are Some(v1), Some(v2) and Some(v3) or None if at least one is None
     public static Option<U> Map3<T1, T2, T3, U>(this (Option<T1>, Option<T2>, Option<T3>) options, Func<T1, T2, T3, U> mapping);
 
-    // Creates a new option containing Some(value) if value.HasValue
+    /// Creates a new option containing Some(value) if value.HasValue
     public static Option<T> OfNullable<T>(T? value) where T : struct;
 
-    // Creates a new option containing Some(obj) if obj is not null
+    /// Creates a new option containing Some(obj) if obj is not null
     public static Option<T> OfObj<T>(T? obj) where T : class;
 
-    // Returns option if option is Some(v) or ifNone if it is None
+    /// Returns option if option is Some(v) or ifNone if it is None
     public static Option<T> OrElse<T>(this Option<T> option, Option<T> ifNone);
 
-    // Returns option if option is Some(v) or ifNoneThunk() if it is None
+    /// Returns option if option is Some(v) or ifNoneThunk() if it is None
     public static Option<T> OrElseWith<T>(this Option<T> option, Func<Option<T>> ifNoneThunk);
 
-    // Returns a single-element array containing v if option is Some(v) or an empty array if it is None
+    /// Returns a single-element array containing v if option is Some(v) or an empty array if it is None
     public static T[] ToArray<T>(this Option<T> option);
 
-    // Returns a single-element enumerable containing v if option is Some(v) or an empty enumerable if it is None
+    /// Returns a single-element enumerable containing v if option is Some(v) or an empty enumerable if it is None
     public static IEnumerable<T> ToEnumerable<T>(this Option<T> option);
 
-    // Returns a non-null value type v if option is Some(v) or null if it is None
+    /// Returns a non-null value type v if option is Some(v) or null if it is None
     public static T? ToNullable<T>(this Option<T> option) where T : struct;
 
-    // Returns a non-null reference type v if option is Some(v) or null if it is None
+    /// Returns a non-null reference type v if option is Some(v) or null if it is None
     public static T? ToObj<T>(this Option<T> option) where T : class;
+
+    /// Creates a new option containing Some(value) if value.HasValue, fluently
+    public static Option<T> ToOption<T>(this T? value) where T : struct;
+
+    /// Creates a new option containing Some(obj) if obj is not null, fluently
+    public static Option<T> ToOption<T>(this T? obj) where T : class;
 }
 
 Option<string> someString = Option.Some("I have a value");
@@ -240,40 +249,40 @@ An `OptionEnumerableExtensions` static class of extension methods is provided to
 ```csharp
 public static class OptionEnumerableExtensions
 {
-    // Returns chooser(v) for each element of source which is Some(v)
+    /// Returns chooser(v) for each element of source which is Some(v)
     public static IEnumerable<U> Choose<T, U>(this IEnumerable<T> source, Func<T, Option<U>> chooser);
 
-    // Returns chooser(v) for the first element of source which is Some(v), or throws KeyNotFoundException if not found
+    /// Returns chooser(v) for the first element of source which is Some(v), or throws KeyNotFoundException if not found
     public static U Pick<T, U>(this IEnumerable<T> source, Func<T, Option<U>> chooser);
 
-    // Returns Some(v) if there is exactly one element of source which is Some(v)
+    /// Returns Some(v) if there is exactly one element of source which is Some(v)
     public static Option<T> TryExactlyOne<T>(this IEnumerable<T> source);
 
-    // Returns Some(v) for the first Some(v) satisfying predicate(v)
+    /// Returns Some(v) for the first Some(v) satisfying predicate(v)
     public static Option<T> TryFind<T>(this IEnumerable<T> source, Func<T, bool> predicate);
 
-    // Returns Some(v) for the last Some(v) satisfying predicate(v)
+    /// Returns Some(v) for the last Some(v) satisfying predicate(v)
     public static Option<T> TryFindBack<T>(this IEnumerable<T> source, Func<T, bool> predicate);
 
-    // Returns the index of the first Some(v) satisfying predicate(v)
+    /// Returns the index of the first Some(v) satisfying predicate(v)
     public static Option<int> TryFindIndex<T>(this IEnumerable<T> source, Func<T, bool> predicate);
 
-    // Returns the index of the last Some(v) satifying predicate(v)
+    /// Returns the index of the last Some(v) satisfying predicate(v)
     public static Option<int> TryFindIndexBack<T>(this IEnumerable<T> source, Func<T, bool> predicate);
 
-    // Returns Some(v) if the first element is Some(v) or None if it is None
+    /// Returns Some(v) if the first element is Some(v) or None if it is None
     public static Option<T> TryHead<T>(this IEnumerable<T> source);
 
-    // Returns Some(v) if the index-th element is Some(v) or None if it is None
+    /// Returns Some(v) if the index-th element is Some(v) or None if it is None
     public static Option<T> TryItem<T>(this IEnumerable<T> source, int index);
 
-    // Returns Some(v) if the last element is Some(v) or None if it is None
+    /// Returns Some(v) if the last element is Some(v) or None if it is None
     public static Option<T> TryLast<T>(this IEnumerable<T> source);
 
-    // Returns chooser(v) for the first element of source which is Some(v), or None if not found
+    /// Returns chooser(v) for the first element of source which is Some(v), or None if not found
     public static Option<U> TryPick<T, U>(this IEnumerable<T> source, Func<T, Option<U>> chooser);
 
-    // Returns an enumerable applying generator on an accumulated state until it returns None
+    /// Returns an enumerable applying generator on an accumulated state until it returns None
     public static IEnumerable<T> Unfold<T, TState>(this TState state, Func<TState, Option<(T, TState)>> generator);
 }
 
@@ -294,7 +303,7 @@ An `OptionExtensions` static class provides extension methods that help use the 
 ```csharp
 public static class OptionExtensions
 {
-    // Returns Some(v) if dict contains key or None if it doesn't
+    /// Returns Some(v) if dict contains key or None if it doesn't
     public static Option<TValue> TryGetValue<TKey, TValue>(this Dictionary<TKey, TValue> dict, TKey key) where TKey : notnull;
     public static Option<TValue> TryGetValue<TKey, TValue>(this ConcurrentDictionary<TKey, TValue> dict, TKey key) where TKey : notnull;
     public static Option<TValue> TryGetValue<TKey, TValue>(this IDictionary<TKey, TValue> dict, TKey key);
@@ -342,22 +351,22 @@ The `Bind` function is especially very convenient when chaining functions when t
 ```csharp
 public static class Result
 {
-    // Creates a new result containing Ok(resultValue)
+    /// Creates a new result containing Ok(resultValue)
     public static Result<T, TError> Ok<T, TError>(T resultValue);
 
-    // Creates a new result containing Error(errorValue)
+    /// Creates a new result containing Error(errorValue)
     public static Result<T, TError> Error<T, TError>(TError errorValue);
 
 
-    // Returns binder(v) if result is Ok(v) or Error(e) if it is Error(e)
+    /// Returns binder(v) if result is Ok(v) or Error(e) if it is Error(e)
     public static Result<U, TError> Bind<T, TError, U>(this Result<T, TError> result, Func<T, Result<U, TError>> binder);
     public static Task<Result<U, TError>> BindAsync<T, TError, U>(this Result<T, TError> result, Func<T, Task<Result<U, TError>>> binder);
 
-    // Returns Ok(mapping(v)) is result is Ok(v) or Error(e) if it is Error(e)
+    /// Returns Ok(mapping(v)) is result is Ok(v) or Error(e) if it is Error(e)
     public static Result<U, TError> Map<T, TError, U>(this Result<T, TError> result, Func<T, U> mapping);
     public static Task<Result<U, TError>> MapAsync<T, TError, U>(this Result<T, TError> result, Func<T, Task<U>> mapping);
 
-    // Returns Error(mapping(e)) if result is Error(e) or Ok(v) if it is Ok(v)
+    /// Returns Error(mapping(e)) if result is Error(e) or Ok(v) if it is Ok(v)
     public static Result<T, U> MapError<T, TError, U>(this Result<T, TError> result, Func<TError, U> mapping);
     public static Task<Result<T, U>> MapErrorAsync<T, TError, U>(this Result<T, TError> result, Func<TError, Task<U>> mapping);
 }
@@ -470,6 +479,125 @@ int maybePiped = twenty.PipeIf(v => v < 10, v => v * 2);
 Both `Pipe` and `PipeIf` provide four overloads (not shown here for conciseness), where either `previous` or `next` are a `Task` that must be awaited, allowing mixed pipelines of synchronous and asynchronous steps.
 
 The async versions of `Pipe` may also be used to chain synchronous and asynchronous function involving `Option`s and `Result`s (see their examples).
+
+## Non-empty collections
+
+Sometimes it's useful knowing that a collection of elements is non-empty at compile time.
+
+This library provides the `INonEmptyEnumerable<T>`, `INonEmptyCollection<T>` and `INonEmptyList<T>` to represent, respectively, `IEnumerable<T>`, `IReadOnlyCollection<T>` and `IReadOnlyList<T>` that are guaranteed to contain at least one element.
+
+This, paired with the `Option` type, allows to take action only when a collection is not empty, with no need to check for `Any()` and get extra safety from the compiler. For example:
+
+```csharp
+var maybeElements = elements.TryCreateNonEmptyCollection();
+// ...
+await maybeElements.IterAsync(es => PostElements(es));
+```
+
+### Non-empty enumerables
+
+The following functionality provides non-empty, lazy enumerables and utility functions to work on them:
+
+```csharp
+public interface INonEmptyEnumerable<out T> : IEnumerable<T> { }
+
+public static class NonEmptyEnumerable
+{
+    /// Returns a new non-empty enumerable containing element after source
+    public static INonEmptyEnumerable<T> Append<T>(this INonEmptyEnumerable<T> source, T element);
+
+    /// Returns a new non-empty enumerable containing second after first
+    public static INonEmptyEnumerable<T> Concat<T>(this INonEmptyEnumerable<T> first, IEnumerable<T> second);
+    public static INonEmptyEnumerable<T> Concat<T>(this IEnumerable<T> first, INonEmptyEnumerable<T> second);
+
+    /// Returns a new non-empty enumerable containing firstElements and any otherElements
+    public static INonEmptyEnumerable<T> Of<T>(T firstElement, params T[] otherElements);
+
+    /// Returns a new non-empty enumerable applying mapper to each element of source
+    public static INonEmptyEnumerable<TOut> Select<TIn, TOut>(this INonEmptyEnumerable<TIn> source, Func<TIn, TOut> mapper);
+
+    /// Creates a new non-empty collection from an INonEmptyEnumerable
+    public static INonEmptyCollection<T> ToNonEmptyCollection<T>(this INonEmptyEnumerable<T> source);
+
+    /// Creates a new non-empty list from an INonEmptyEnumerable
+    public static INonEmptyList<T> ToNonEmptyList<T>(this INonEmptyEnumerable<T> source);
+}
+```
+
+### Non-empty collections
+
+The following functionality provides non-empty collections and utility functions to work on them:
+
+```csharp
+public interface INonEmptyCollection<out T> : INonEmptyEnumerable<T>, IReadOnlyCollection<T> { }
+
+public static class NonEmptyCollection
+{
+    /// Returns Some INonEmptyCollection if collection is not empty, or None if collection is empty
+    public static Option<INonEmptyCollection<T>> TryCreateNonEmptyCollection<T>(this IReadOnlyCollection<T> collection);
+}
+```
+
+### Non-empty lists
+
+The following functionality provides non-empty, indexed lists and utility functions to work on them:
+
+```csharp
+public interface INonEmptyList<out T> : INonEmptyCollection<T>, IReadOnlyList<T> { }
+
+public static class NonEmptyList
+{
+    /// Returns Some INonEmptyList if list is not empty, or None if list is empty
+    public static Option<INonEmptyList<T>> TryCreateNonEmptyList<T>(this IReadOnlyList<T> list);
+}
+```
+
+## Helpers to work with read-only collections
+
+To promote safety, using read-only variants of collection interfaces is advised. The standard `Enumerable` class provides LINQ methods such as `ToList`, `ToDictionary` and `ToHashSet` to materialize enumerables into collections, but the resulting type is that of the concrete, mutable implementation.
+
+This can be uncomfortable to work with when generic invariancy is involved. For example, if you want an `IReadOnlyDictionary` of `IReadOnlyCollection`s, you will need casts if you have a `Dictionary` of `List`s to begin with.
+
+The following helpers aim at reducing the amount of casts needed, as well as better convey the intent to work on read-only collections.
+
+```csharp
+public static class ReadOnlyCollection
+{
+    /// Like Enumerable.ToList() but casts the result to IReadOnlyCollection
+    public static IReadOnlyCollection<T> ToReadOnlyCollection<T>(this IEnumerable<T> source);
+
+    /// Returns a singleton empty IReadOnlyCollection
+    public static IReadOnlyCollection<T> Empty<T>();
+}
+
+public static class ReadOnlyList
+{
+    /// Like Enumerable.ToList() but casts the result to IReadOnlyList
+    public static IReadOnlyList<T> ToReadOnlyList<T>(this IEnumerable<T> source);
+
+    /// Returns a singleton empty IReadOnlyList
+    public static IReadOnlyList<T> Empty<T>();
+}
+
+public static class ReadOnlyDictionary
+{
+    /// Like Enumerable.ToDictionary() but casts the result to IReadOnlyDictionary
+    public static IReadOnlyDictionary<TKey, TValue> ToReadOnlyDictionary<T, TKey, TValue>(this IEnumerable<T> source, Func<T, TKey> keySelector, Func<T, TValue> valueSelector) where TKey : notnull;
+    public static IReadOnlyDictionary<TKey, T> ToReadOnlyDictionary<T, TKey>(this IEnumerable<T> source, Func<T, TKey> keySelector) where TKey : notnull;
+
+    /// Returns a singleton empty IReadOnlyDictionary
+    public static IReadOnlyDictionary<TKey, TValue> Empty<TKey, TValue>() where TKey : notnull;
+}
+
+public static class ReadOnlySet
+{
+    /// Like Enumerable.ToHashSet() but casts the result to IReadOnlySet
+    public static IReadOnlySet<T> ToReadOnlySet<T>(this IEnumerable<T> source);
+
+    /// Returns a singleton empty IReadOnlySet
+    public static IReadOnlyCollection<T> Empty<T>();
+}
+```
 
 ## License
 
