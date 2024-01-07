@@ -6,7 +6,7 @@
 		<Version>1.3.0-alpha.1</Version>
 		<Authors>Salvo Isaja</Authors>
 		<Company>Salvo Isaja</Company>
-		<Copyright>Copyright 2022-2023  Salvatore Isaja</Copyright>
+		<Copyright>Copyright 2022-2024  Salvatore Isaja</Copyright>
 		<PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
 		<PackageProjectUrl>https://github.com/salvois/DiscriminatedOnions</PackageProjectUrl>
 		<Description>A stinky but tasty hack to emulate F#-like discriminated unions in C#</Description>
