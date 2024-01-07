@@ -31,8 +31,8 @@ I have written this library because I needed it and because it was fun, but it d
 
 ## Changelog
 
-* 1.3: Fluent `ToOption` for `Option`, non-empty collections, helpers for read-only collections
-* 1.2: Async versions of Helpers to work with read-only collectionsbind`, `iter` and `map` for `Option` and `Result`
+* 1.3: Fluent `ToOption` for `Option`; non-empty collections; helpers for read-only collections
+* 1.2: Async versions of `bind`, `iter` and `map` for `Option` and `Result`
 * 1.1: `Option`-based `TryGetValue` for dictionaries
 * 1.0: Finalized API with `Option` and `Result` reimplemented as value types for better performance
 
