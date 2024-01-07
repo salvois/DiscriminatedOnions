@@ -22,11 +22,17 @@ I have written this library because I needed it and because it was fun, but it d
   - [Single-case union types](#single-case-union-types)
   - [Unit type](#unit-type)
   - [Piping function calls](#piping-function-calls)
+  - [Non-empty enumerable and collections](#non-empty-enumerable-and-collections)
+    - [Non-empty enumerables](#non-empty-enumerables)
+    - [Non-empty collections](#non-empty-collections)
+    - [Non-empty lists](#non-empty-lists)
+  - [Helpers to work with read-only collections](#helpers-to-work-with-read-only-collections)
   - [License](#license)
 
 ## Changelog
 
-* 1.2: Async versions of `bind`, `iter` and `map` for `Option` and `Result`
+* 1.3: Fluent `ToOption` for `Option`, non-empty collections, helpers for read-only collections
+* 1.2: Async versions of Helpers to work with read-only collectionsbind`, `iter` and `map` for `Option` and `Result`
 * 1.1: `Option`-based `TryGetValue` for dictionaries
 * 1.0: Finalized API with `Option` and `Result` reimplemented as value types for better performance
 
@@ -480,7 +486,7 @@ Both `Pipe` and `PipeIf` provide four overloads (not shown here for conciseness)
 
 The async versions of `Pipe` may also be used to chain synchronous and asynchronous function involving `Option`s and `Result`s (see their examples).
 
-## Non-empty collections
+## Non-empty enumerable and collections
 
 Sometimes it's useful knowing that a collection of elements is non-empty at compile time.
 
