@@ -42,6 +42,6 @@ public static class ReadOnlySet
         source.ToHashSet();
 
     /// Returns a singleton empty IReadOnlySet
-    public static IReadOnlyCollection<T> Empty<T>() =>
+    public static IReadOnlySet<T> Empty<T>() =>
         EmptySet<T>.Value;
 }
