@@ -52,6 +52,10 @@ public readonly record struct Result<T, TError>
         }
     }
 
+    public static implicit operator Result<T, TError>(TError target) => Result.Error<T, TError>(target);
+
+    public static implicit operator Result<T, TError>(T target) => Result.Ok<T, TError>(target);
+
     public override string ToString() =>
         IsOk ? $"Ok({ResultValue})" : $"Error({ErrorValue})";
 
