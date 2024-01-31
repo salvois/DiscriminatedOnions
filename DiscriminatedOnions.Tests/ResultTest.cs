@@ -195,16 +195,16 @@ public static class ResultTest
     [Test]
     public static void Error_ImplicitConversion()
     {
-        Result<string, int> ReturnErrorImplicit() => DummyErrorValue;
+        Result<string, int> ErrorImplicit() => DummyErrorValue;
     
-        Result.Error<string, int>(DummyErrorValue).ErrorValue.Should().Be(ReturnErrorImplicit().ErrorValue);
+        Result.Error<string, int>(DummyErrorValue).ErrorValue.Should().Be(ErrorImplicit().ErrorValue);
     }
 
     [Test]
     public static void Ok_ImplicitConversion()
     {
-        Result.Ok<string, int>(DummyResultValue).ResultValue.Should().Be(OkImplicit().ResultValue);
-
         Result<string, int> OkImplicit() => DummyResultValue;
+        
+        Result.Ok<string, int>(DummyResultValue).ResultValue.Should().Be(OkImplicit().ResultValue);
     }
 }
