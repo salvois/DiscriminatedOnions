@@ -191,4 +191,20 @@ public static class ResultTest
                 onError: e => (e, DummyResultValue),
                 onOk: v => (DummyErrorValue, v))))
         .Should().Be((43, DummyResultValue));
+    
+    [Test]
+    public static void Error_ImplicitConversion()
+    {
+        Result<string, int> ErrorImplicit() => DummyErrorValue;
+    
+        Result.Error<string, int>(DummyErrorValue).ErrorValue.Should().Be(ErrorImplicit().ErrorValue);
+    }
+
+    [Test]
+    public static void Ok_ImplicitConversion()
+    {
+        Result<string, int> OkImplicit() => DummyResultValue;
+        
+        Result.Ok<string, int>(DummyResultValue).ResultValue.Should().Be(OkImplicit().ResultValue);
+    }
 }
