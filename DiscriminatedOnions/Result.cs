@@ -82,6 +82,34 @@ public static class Result
     public static Task<Result<U, TError>> BindAsync<T, TError, U>(this Result<T, TError> result, Func<T, Task<Result<U, TError>>> binder) =>
         result.Match(e => Task.FromResult(Error<U, TError>(e)), binder);
 
+    /// Returns true if result is Ok(value) or false if it is not
+    public static bool Contains<T, TError>(this Result<T, TError> result, T value) =>
+        result.Match(_ => false, v => Equals(v, value));
+
+    /// Returns 1 if result is Ok(v) or 0 if it is Error(e)
+    public static int Count<T, TError>(this Result<T, TError> result) =>
+        result.Match(_ => 0, _ => 1);
+
+    /// Returns v if result is Ok(v) or value if it is Error(e)
+    public static T DefaultValue<T, TError>(this Result<T, TError> result, T value) =>
+        result.Match(_ => value, v => v);
+
+    /// Returns v if result is Ok(v) or defThunk(e) if it is Error(e)
+    public static T DefaultWith<T, TError>(this Result<T, TError> result, Func<TError, T> defThunk) =>
+        result.Match(defThunk, v => v);
+
+    /// Returns v if result is Ok(v) or defThunk(e) if it is Error(e)
+    public static Task<T> DefaultWithAsync<T, TError>(this Result<T, TError> result, Func<TError, Task<T>> defThunk) =>
+        result.Match(defThunk, Task.FromResult);
+
+    /// Returns predicate(v) if result is Ok(v) or false if it is Error(e)
+    public static bool Exists<T, TError>(this Result<T, TError> result, Func<T, bool> predicate) =>
+        result.Match(_ => false, predicate);
+
+    /// Returns predicate(v) if result is Ok(v) or true if it is Error(e)
+    public static bool ForAll<T, TError>(this Result<T, TError> result, Func<T, bool> predicate) =>
+        result.Match(_ => true, predicate);
+
     /// Returns v if result is Ok(v) or throws an InvalidOperationException if it is Error(e), discouraged
     public static T Get<T, TError>(this Result<T, TError> result) =>
         result is { IsOk: true, ResultValue: var v } ? v : throw new InvalidOperationException();

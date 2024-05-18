@@ -76,7 +76,7 @@ public static class Option
     public static Task<Option<U>> BindAsync<T, U>(this Option<T> option, Func<T, Task<Option<U>>> binder) =>
         option.Match(TaskNone<U>, binder);
 
-    /// Returns true if option is Some(value) or false if it is None
+    /// Returns true if option is Some(value) or false if it is not
     public static bool Contains<T>(this Option<T> option, T value) =>
         option.Match(() => false, v => Equals(v, value));
 

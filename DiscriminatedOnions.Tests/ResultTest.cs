@@ -124,6 +124,48 @@ public static class ResultTest
         .Should().Be((42, DummyResultValue));
 
     [Test]
+    public static void Contains_Ok_Matching() => Result.Ok<string, int>("value").Contains("value").Should().BeTrue();
+
+    [Test]
+    public static void Contains_Ok_NotMatching() => Result.Ok<string, int>("value").Contains("anotherValue").Should().BeFalse();
+
+    [Test]
+    public static void Contains_Error() => Result.Error<string, int>(42).Contains("value").Should().BeFalse();
+
+    [Test]
+    public static void Count_Ok() => Result.Ok<string, int>(GoodResultValue).Count().Should().Be(1);
+
+    [Test]
+    public static void Count_Error() => Result.Error<string, int>(42).Count().Should().Be(0);
+
+    [Test]
+    public static void DefaultValue_Ok() => Result.Ok<string, int>("value").DefaultValue("defaultValue").Should().Be("value");
+
+    [Test]
+    public static void DefaultValue_Error() => Result.Error<string, int>(42).DefaultValue("defaultValue").Should().Be("defaultValue");
+
+    [Test]
+    public static void DefaultWith_Ok() => Result.Ok<string, int>("value").DefaultWith(e => $"defaultValue{e}").Should().Be("value");
+
+    [Test]
+    public static void DefaultWith_Error() => Result.Error<string, int>(42).DefaultWith(e => $"defaultValue{e}").Should().Be("defaultValue42");
+
+    [Test]
+    public static async Task DefaultWithAsync_Ok() => (await Result.Ok<string, int>("value").DefaultWithAsync(e => Task.FromResult($"defaultValue{e}"))).Should().Be("value");
+
+    [Test]
+    public static async Task DefaultWithAsync_Error() => (await Result.Error<string, int>(42).DefaultWithAsync(e => Task.FromResult($"defaultValue{e}"))).Should().Be("defaultValue42");
+
+    [Test]
+    public static void Exists_Ok_Matching() => Result.Ok<string, int>("value").Exists(v => v == "value").Should().BeTrue();
+
+    [Test]
+    public static void Exists_Ok_NotMatching() => Result.Ok<string, int>("value").Exists(v => v == "anotherValue").Should().BeFalse();
+
+    [Test]
+    public static void Exists_Error() => Result.Error<string, int>(42).Exists(v => v == "value").Should().BeFalse();
+
+    [Test]
     public static void Get_Ok() => Result.Ok<string, int>(GoodResultValue).Get().Should().Be(GoodResultValue);
 
     [Test]
@@ -134,6 +176,15 @@ public static class ResultTest
 
     [Test]
     public static void GetError_Error() => Result.Error<string, int>(GoodErrorValue).GetError().Should().Be(GoodErrorValue);
+
+    [Test]
+    public static void ForAll_Ok_Matching() => Result.Ok<int, string>(42).ForAll(v => v >= 5).Should().BeTrue();
+
+    [Test]
+    public static void ForAll_Ok_NotMatching() => Result.Ok<int, string>(4).ForAll(v => v >= 5).Should().BeFalse();
+
+    [Test]
+    public static void ForAll_Error() => Result.Error<int, string>("error").ForAll(v => v >= 5).Should().BeTrue();
 
     [Test]
     public static void IsOk_Ok() => Result.Ok<string, int>(GoodResultValue).IsOk().Should().BeTrue();

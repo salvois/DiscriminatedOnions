@@ -371,9 +371,24 @@ public static class Result
     public static Result<U, TError>       Bind     <T, TError, U>(this Result<T, TError> result, Func<T, Result<U, TError>>       binder);
     public static Task<Result<U, TError>> BindAsync<T, TError, U>(this Result<T, TError> result, Func<T, Task<Result<U, TError>>> binder);
 
-    /// Returns Ok(mapping(v)) is result is Ok(v) or Error(e) if it is Error(e)
-    public static Result<U, TError>       Map     <T, TError, U>(this Result<T, TError> result, Func<T, U>       mapping);
-    public static Task<Result<U, TError>> MapAsync<T, TError, U>(this Result<T, TError> result, Func<T, Task<U>> mapping);
+    /// Returns true if result is Ok(value) or false if it is not
+    public static bool Contains<T, TError>(this Result<T, TError> result, T value);
+
+    /// Returns 1 if result is Ok(v) or 0 if it is Error(e)
+    public static int Count<T, TError>(this Result<T, TError> result);
+
+    /// Returns v if result is Ok(v) or value if it is Error(e)
+    public static T DefaultValue<T, TError>(this Result<T, TError> result, T value);
+
+    /// Returns v if result is Ok(v) or defThunk(e) if it is Error(e)
+    public static T       DefaultWith     <T, TError>(this Result<T, TError> result, Func<TError, T>       defThunk);
+    public static Task<T> DefaultWithAsync<T, TError>(this Result<T, TError> result, Func<TError, Task<T>> defThunk);
+
+    /// Returns predicate(v) if result is Ok(v) or false if it is Error(e)
+    public static bool Exists<T, TError>(this Result<T, TError> result, Func<T, bool> predicate);
+
+    /// Returns predicate(v) if result is Ok(v) or true if it is Error(e)
+    public static bool ForAll<T, TError>(this Result<T, TError> result, Func<T, bool> predicate);
 
     /// Returns v if result is Ok(v) or throws an InvalidOperationException if it is Error(e), discouraged
     public static T Get<T, TError>(this Result<T, TError> result);
@@ -394,6 +409,10 @@ public static class Result
     /// Executes action(e) if result is Error(e)
     public static void IterError     <T, TError>(this Result<T, TError> result, Action<TError>     action);
     public static Task IterErrorAsync<T, TError>(this Result<T, TError> result, Func<TError, Task> action);
+
+    /// Returns Ok(mapping(v)) is result is Ok(v) or Error(e) if it is Error(e)
+    public static Result<U, TError>       Map     <T, TError, U>(this Result<T, TError> result, Func<T, U>       mapping);
+    public static Task<Result<U, TError>> MapAsync<T, TError, U>(this Result<T, TError> result, Func<T, Task<U>> mapping);
 
     /// Returns Error(mapping(e)) if result is Error(e) or Ok(v) if it is Ok(v)
     public static Result<T, U>       MapError     <T, TError, U>(this Result<T, TError> result, Func<TError, U>       mapping);
