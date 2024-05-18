@@ -178,6 +178,12 @@ public static class ResultTest
     public static void GetError_Error() => Result.Error<string, int>(GoodErrorValue).GetError().Should().Be(GoodErrorValue);
 
     [Test]
+    public static void Fold_Ok() => Result.Ok<int, string>(1).Fold(10, (acc, v) => acc + v * 2).Should().Be(12);
+
+    [Test]
+    public static void Fold_Error() => Result.Error<int, string>("error").Fold(10, (acc, v) => acc + v * 2).Should().Be(10);
+
+    [Test]
     public static void ForAll_Ok_Matching() => Result.Ok<int, string>(42).ForAll(v => v >= 5).Should().BeTrue();
 
     [Test]
@@ -350,6 +356,17 @@ public static class ResultTest
                 onOk: v => (DummyErrorValue, v))))
         .Should().Be((43, DummyResultValue));
 
+    [Test]
+    public static void ToArray_Ok() => Result.Ok<int, string>(42).ToArray().Should().BeEquivalentTo(new[] { 42 });
+
+    [Test]
+    public static void ToArray_Error() => Result.Error<int, string>("error").ToArray().Should().BeEquivalentTo(Array.Empty<int>());
+
+    [Test]
+    public static void ToEnumerable_Ok() => Result.Ok<int, string>(42).ToEnumerable().Should().BeEquivalentTo(new[] { 42 });
+
+    [Test]
+    public static void ToEnumerable_Error() => Result.Error<int, string>("error").ToEnumerable().Should().BeEquivalentTo(Array.Empty<int>());
 
     [Test]
     public static void ToOption_Ok() => Result.Ok<string, int>(GoodResultValue).ToOption().Should().Be(Option.Some(GoodResultValue));

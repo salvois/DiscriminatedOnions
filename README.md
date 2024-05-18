@@ -387,6 +387,9 @@ public static class Result
     /// Returns predicate(v) if result is Ok(v) or false if it is Error(e)
     public static bool Exists<T, TError>(this Result<T, TError> result, Func<T, bool> predicate);
 
+    /// Returns folder(initialState, v) if result is Ok(v) or initialState if it is Error(e)
+    public static TState Fold<T, TError, TState>(this Result<T, TError> result, TState initialState, Func<TState, T, TState> folder);
+
     /// Returns predicate(v) if result is Ok(v) or true if it is Error(e)
     public static bool ForAll<T, TError>(this Result<T, TError> result, Func<T, bool> predicate);
 
@@ -417,6 +420,12 @@ public static class Result
     /// Returns Error(mapping(e)) if result is Error(e) or Ok(v) if it is Ok(v)
     public static Result<T, U>       MapError     <T, TError, U>(this Result<T, TError> result, Func<TError, U>       mapping);
     public static Task<Result<T, U>> MapErrorAsync<T, TError, U>(this Result<T, TError> result, Func<TError, Task<U>> mapping);
+
+    /// Returns a single-element array containing v if result is Ok(v) or an empty array if it is Error(e)
+    public static T[] ToArray<T, TError>(this Result<T, TError> result);
+
+    /// Returns a single-element enumerable containing v if option is Ok(v) or an empty enumerable if it is Error(e)
+    public static IEnumerable<T> ToEnumerable<T, TError>(this Result<T, TError> result);
 
     /// Returns Some(v) if result is Ok(v) otherwise returns None
     public static Option<T> ToOption<T, TError>(this Result<T, TError> result);
