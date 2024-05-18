@@ -372,5 +372,11 @@ public static class ResultTest
     public static void ToOption_Ok() => Result.Ok<string, int>(GoodResultValue).ToOption().Should().Be(Option.Some(GoodResultValue));
 
     [Test]
-    public static void ToOption_Error() => Result.Error<string, int>(42).ToOption().Should().Be(Option.None<string>());
+    public static void ToOption_Error() => Result.Error<string, int>(GoodErrorValue).ToOption().Should().Be(Option.None<string>());
+
+    [Test]
+    public static void ToOptionError_Ok() => Result.Ok<string, int>(GoodResultValue).ToOptionError().Should().Be(Option.None<int>());
+
+    [Test]
+    public static void ToOptionError_Error() => Result.Error<string, int>(GoodErrorValue).ToOptionError().Should().Be(Option.Some(GoodErrorValue));
 }

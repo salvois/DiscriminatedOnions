@@ -85,11 +85,11 @@ public static class Result
 
     /// Returns true if result is Ok(value) or false if it is not
     public static bool Contains<T, TError>(this Result<T, TError> result, T value) =>
-        result.Match(_ => false, v => Equals(v, value));
+        result.ToOption().Contains(value);
 
     /// Returns 1 if result is Ok(v) or 0 if it is Error(e)
     public static int Count<T, TError>(this Result<T, TError> result) =>
-        result.Match(_ => 0, _ => 1);
+        result.ToOption().Count();
 
     /// Returns v if result is Ok(v) or value if it is Error(e)
     public static T DefaultValue<T, TError>(this Result<T, TError> result, T value) =>
@@ -105,23 +105,23 @@ public static class Result
 
     /// Returns predicate(v) if result is Ok(v) or false if it is Error(e)
     public static bool Exists<T, TError>(this Result<T, TError> result, Func<T, bool> predicate) =>
-        result.Match(_ => false, predicate);
+        result.ToOption().Exists(predicate);
 
     /// Returns folder(initialState, v) if result is Ok(v) or initialState if it is Error(e)
     public static TState Fold<T, TError, TState>(this Result<T, TError> result, TState initialState, Func<TState, T, TState> folder) =>
-        result.Match(_ => initialState, v => folder(initialState, v));
+        result.ToOption().Fold(initialState, folder);
 
     /// Returns predicate(v) if result is Ok(v) or true if it is Error(e)
     public static bool ForAll<T, TError>(this Result<T, TError> result, Func<T, bool> predicate) =>
-        result.Match(_ => true, predicate);
+        result.ToOption().ForAll(predicate);
 
     /// Returns v if result is Ok(v) or throws an InvalidOperationException if it is Error(e), discouraged
     public static T Get<T, TError>(this Result<T, TError> result) =>
-        result is { IsOk: true, ResultValue: var v } ? v : throw new InvalidOperationException();
+        result.ToOption().Get();
 
     /// Returns e if result is Error(e) or throws an InvalidOperationException if it is Ok(v), discouraged
     public static TError GetError<T, TError>(this Result<T, TError> result) =>
-        result is { IsOk: false, ErrorValue: var e } ? e : throw new InvalidOperationException();
+        result.ToOptionError().Get();
 
     /// Returns true if result is Error(e), discouraged
     public static bool IsError<T, TError>(this Result<T, TError> result) =>
@@ -132,26 +132,20 @@ public static class Result
         result.IsOk;
 
     /// Executes action(v) if result is Ok(v)
-    public static void Iter<T, TError>(this Result<T, TError> result, Action<T> action)
-    {
-        if (result is { IsOk: true, ResultValue: var v })
-            action(v);
-    }
+    public static void Iter<T, TError>(this Result<T, TError> result, Action<T> action) =>
+        result.ToOption().Iter(action);
 
     /// Executes action(v) if result is Ok(v)
     public static Task IterAsync<T, TError>(this Result<T, TError> result, Func<T, Task> action) =>
-        result is { IsOk: true, ResultValue: var v } ? action(v) : Task.CompletedTask;
+        result.ToOption().IterAsync(action);
 
     /// Executes action(e) if result is Error(e)
-    public static void IterError<T, TError>(this Result<T, TError> result, Action<TError> action)
-    {
-        if (result is { IsOk: false, ErrorValue: var e })
-            action(e);
-    }
+    public static void IterError<T, TError>(this Result<T, TError> result, Action<TError> action) =>
+        result.ToOptionError().Iter(action);
 
     /// Executes action(e) if result is Error(e)
     public static Task IterErrorAsync<T, TError>(this Result<T, TError> result, Func<TError, Task> action) =>
-        result is { IsOk: false, ErrorValue: var e } ? action(e) : Task.CompletedTask;
+        result.ToOptionError().IterAsync(action);
 
     /// Returns Ok(mapping(v)) is result is Ok(v) or Error(e) if it is Error(e)
     public static Result<U, TError> Map<T, TError, U>(this Result<T, TError> result, Func<T, U> mapping) =>
@@ -171,16 +165,17 @@ public static class Result
 
     /// Returns a single-element array containing v if result is Ok(v) or an empty array if it is Error(e)
     public static T[] ToArray<T, TError>(this Result<T, TError> result) =>
-        result.Match(_ => Array.Empty<T>(), v => new[] { v });
+        result.ToOption().ToArray();
 
     /// Returns a single-element enumerable containing v if option is Ok(v) or an empty enumerable if it is Error(e)
-    public static IEnumerable<T> ToEnumerable<T, TError>(this Result<T, TError> result)
-    {
-        if (result is { IsOk: true, ResultValue: var v })
-            yield return v;
-    }
+    public static IEnumerable<T> ToEnumerable<T, TError>(this Result<T, TError> result) =>
+        result.ToOption().ToEnumerable();
 
     /// Returns Some(v) if result is Ok(v) otherwise returns None
     public static Option<T> ToOption<T, TError>(this Result<T, TError> result) =>
         result.Match(_ => Option.None<T>(), Option.Some);
+
+    /// Returns Some(e) if result is Error(e) otherwise returns None
+    public static Option<TError> ToOptionError<T, TError>(this Result<T, TError> result) =>
+        result.Match(Option.Some, _ => Option.None<TError>());
 }
