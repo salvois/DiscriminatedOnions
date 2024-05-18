@@ -379,4 +379,59 @@ public static class ResultTest
 
     [Test]
     public static void ToOptionError_Error() => Result.Error<string, int>(GoodErrorValue).ToOptionError().Should().Be(Option.Some(GoodErrorValue));
+
+    [Test]
+    public static void TryGet_ValueType_Ok()
+    {
+        Result.Ok<int, string>(42).TryGet(out var value).Should().BeTrue();
+        value.Should().Be(42);
+    }
+
+    [Test]
+    public static void TryGet_ValueType_Error()
+    {
+        Result.Error<int, string>("error").TryGet(out var value).Should().BeFalse();
+        value.Should().BeNull();
+    }
+
+    [Test]
+    public static void TryGet_ReferenceType_Ok()
+    {
+        Result.Ok<string, int>("value").TryGet(out var value).Should().BeTrue();
+        value.Should().Be("value");
+    }
+
+    [Test]
+    public static void TryGet_ReferenceType_Error()
+    {
+        Result.Error<string, int>(42).TryGet(out var value).Should().BeFalse();
+        value.Should().BeNull();
+    }
+    [Test]
+    public static void TryGetError_ValueType_Ok()
+    {
+        Result.Ok<string, int>("value").TryGetError(out var value).Should().BeFalse();
+        value.Should().BeNull();
+    }
+
+    [Test]
+    public static void TryGetError_ValueType_Error()
+    {
+        Result.Error<string, int>(42).TryGetError(out var value).Should().BeTrue();
+        value.Should().Be(42);
+    }
+
+    [Test]
+    public static void TryGetError_ReferenceType_Ok()
+    {
+        Result.Ok<int, string>(42).TryGetError(out var value).Should().BeFalse();
+        value.Should().BeNull();
+    }
+
+    [Test]
+    public static void TryGetError_ReferenceType_Error()
+    {
+        Result.Error<int, string>("error").TryGetError(out var value).Should().BeTrue();
+        value.Should().Be("error");
+    }
 }

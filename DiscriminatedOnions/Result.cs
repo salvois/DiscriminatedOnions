@@ -26,6 +26,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 
 namespace DiscriminatedOnions;
@@ -178,4 +179,20 @@ public static class Result
     /// Returns Some(e) if result is Error(e) otherwise returns None
     public static Option<TError> ToOptionError<T, TError>(this Result<T, TError> result) =>
         result.Match(Option.Some, _ => Option.None<TError>());
+
+    /// Returns true and set value to v is result is Ok(v), useful if you need to yield return
+    public static bool TryGet<T, TError>(this Result<T, TError> result, out T? value) where T : struct =>
+        result.ToOption().TryGet(out value);
+
+    /// Returns true and set value to v is result is Ok(v), useful if you need to yield return
+    public static bool TryGet<T, TError>(this Result<T, TError> result, [MaybeNullWhen(false)] out T value) where T : class =>
+        result.ToOption().TryGet(out value);
+
+    /// Returns true and set errorValue to e is result is Error(e), useful if you need to yield return
+    public static bool TryGetError<T, TError>(this Result<T, TError> result, out TError? errorValue) where TError : struct =>
+        result.ToOptionError().TryGet(out errorValue);
+
+    /// Returns true and set errorValue to e is result is Error(e), useful if you need to yield return
+    public static bool TryGetError<T, TError>(this Result<T, TError> result, [MaybeNullWhen(false)] out TError errorValue) where TError : class =>
+        result.ToOptionError().TryGet(out errorValue);
 }

@@ -31,7 +31,7 @@ I have written this library because I needed it and because it was fun, but it d
 
 ## Changelog
 
-* 1.4: `DefaultWithAsync` and `OrElseAsync` for `Option`
+* 1.4: `DefaultWithAsync`, `OrElseAsync` and `TryGet` for `Option`, `Result` parity with `Option`
 * 1.3: Fluent `ToOption` for `Option`; non-empty collections; helpers for read-only collections
 * 1.2: Async versions of `bind`, `iter` and `map` for `Option` and `Result`
 * 1.1: `Option`-based `TryGetValue` for dictionaries
@@ -234,6 +234,10 @@ public static class Option
 
     /// Creates a new option containing Some(obj) if obj is not null, fluently
     public static Option<T> ToOption<T>(this T? obj) where T : class;
+
+    /// Returns true and set values to v is option is Some(v), useful if you need to yield return
+    public static bool TryGet<T>(this Option<T> option, out T? value) where T : struct;
+    public static bool TryGet<T>(this Option<T> option, [MaybeNullWhen(false)] out T value) where T : class;
 }
 
 Option<string> someString = Option.Some("I have a value");
@@ -429,6 +433,17 @@ public static class Result
 
     /// Returns Some(v) if result is Ok(v) otherwise returns None
     public static Option<T> ToOption<T, TError>(this Result<T, TError> result);
+
+    /// Returns Some(e) if result is Error(e) otherwise returns None
+    public static Option<TError> ToOptionError<T, TError>(this Result<T, TError> result);
+
+    /// Returns true and set value to v is result is Ok(v), useful if you need to yield return
+    public static bool TryGet<T, TError>(this Result<T, TError> result, out T? value) where T : struct;
+    public static bool TryGet<T, TError>(this Result<T, TError> result, [MaybeNullWhen(false)] out T value) where T : class;
+
+    /// Returns true and set errorValue to e is result is Error(e), useful if you need to yield return
+    public static bool TryGetError<T, TError>(this Result<T, TError> result, out TError? errorValue) where TError : struct;
+    public static bool TryGetError<T, TError>(this Result<T, TError> result, [MaybeNullWhen(false)] out TError errorValue) where TError : class;
 }
 
 Result<string, int> ok = Result.Ok<string, int>("result value");

@@ -26,6 +26,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 
 namespace DiscriminatedOnions;
@@ -209,4 +210,34 @@ public static class Option
     /// Creates a new option containing Some(obj) if obj is not null, fluently
     public static Option<T> ToOption<T>(this T? obj) where T : class =>
         OfObj(obj);
+
+    /// Returns true and set value to v is option is Some(v), useful if you need to yield return
+    public static bool TryGet<T>(this Option<T> option, out T? value) where T : struct
+    {
+        if (option is { IsSome: true, Value: var v })
+        {
+            value = v;
+            return true;
+        }
+        else
+        {
+            value = null;
+            return false;
+        }
+    }
+
+    /// Returns true and set value to v is option is Some(v), useful if you need to yield return
+    public static bool TryGet<T>(this Option<T> option, [MaybeNullWhen(false)] out T value) where T : class
+    {
+        if (option is { IsSome: true, Value: var v })
+        {
+            value = v;
+            return true;
+        }
+        else
+        {
+            value = null;
+            return false;
+        }
+    }
 }

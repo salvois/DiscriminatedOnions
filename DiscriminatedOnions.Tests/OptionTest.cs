@@ -380,4 +380,32 @@ public static class OptionTest
 
     [Test]
     public static void ToOption_ReferenceType_Null() => ((string?)null).ToOption().Should().Be(Option.None<string>());
+
+    [Test]
+    public static void TryGet_ValueType_Some()
+    {
+        Option.Some(42).TryGet(out var value).Should().BeTrue();
+        value.Should().Be(42);
+    }
+
+    [Test]
+    public static void TryGet_ValueType_None()
+    {
+        Option.None<int>().TryGet(out var value).Should().BeFalse();
+        value.Should().BeNull();
+    }
+
+    [Test]
+    public static void TryGet_ReferenceType_Some()
+    {
+        Option.Some("value").TryGet(out var value).Should().BeTrue();
+        value.Should().Be("value");
+    }
+
+    [Test]
+    public static void TryGet_ReferenceType_None()
+    {
+        Option.None<string>().TryGet(out var value).Should().BeFalse();
+        value.Should().BeNull();
+    }
 }
