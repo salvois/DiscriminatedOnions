@@ -82,6 +82,22 @@ public static class Result
     public static Task<Result<U, TError>> BindAsync<T, TError, U>(this Result<T, TError> result, Func<T, Task<Result<U, TError>>> binder) =>
         result.Match(e => Task.FromResult(Error<U, TError>(e)), binder);
 
+    /// Returns v if result is Ok(v) or throws an InvalidOperationException if it is Error(e), discouraged
+    public static T Get<T, TError>(this Result<T, TError> result) =>
+        result is { IsOk: true, ResultValue: var v } ? v : throw new InvalidOperationException();
+
+    /// Returns e if result is Error(e) or throws an InvalidOperationException if it is Ok(v), discouraged
+    public static TError GetError<T, TError>(this Result<T, TError> result) =>
+        result is { IsOk: false, ErrorValue: var e } ? e : throw new InvalidOperationException();
+
+    /// Returns true if result is Error(e), discouraged
+    public static bool IsError<T, TError>(this Result<T, TError> result) =>
+        !result.IsOk;
+
+    /// Returns true if result is Ok(v), discouraged
+    public static bool IsOk<T, TError>(this Result<T, TError> result) =>
+        result.IsOk;
+    
     /// Executes action(v) if result is Ok(v)
     public static void Iter<T, TError>(this Result<T, TError> result, Action<T> action)
     {

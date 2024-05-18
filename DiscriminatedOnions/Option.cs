@@ -124,7 +124,7 @@ public static class Option
     public static bool IsNone<T>(this Option<T> option) =>
         !option.IsSome;
 
-    /// Return true if option is Some(v), discouraged
+    /// Returns true if option is Some(v), discouraged
     public static bool IsSome<T>(this Option<T> option) =>
         option.IsSome;
 

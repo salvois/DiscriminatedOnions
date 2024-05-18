@@ -24,6 +24,7 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
+using System;
 using System.Threading.Tasks;
 using FluentAssertions;
 using NUnit.Framework;
@@ -33,7 +34,9 @@ namespace DiscriminatedOnions.Tests;
 [TestFixture]
 public static class ResultTest
 {
+    private const string GoodResultValue = nameof(GoodResultValue);
     private const string DummyResultValue = nameof(DummyResultValue);
+    private const int GoodErrorValue = 42;
     private const int DummyErrorValue = int.MinValue;
 
     [Test]
@@ -119,6 +122,30 @@ public static class ResultTest
                 onError: e => (e, DummyResultValue),
                 onOk: v => (DummyErrorValue, v))))
         .Should().Be((42, DummyResultValue));
+
+    [Test]
+    public static void Get_Ok() => Result.Ok<string, int>(GoodResultValue).Get().Should().Be(GoodResultValue);
+
+    [Test]
+    public static void Get_Error() => ((Func<string>)(() => Result.Error<string, int>(GoodErrorValue).Get())).Should().Throw<InvalidOperationException>();
+
+    [Test]
+    public static void GetError_Ok() => ((Func<int>)(() => Result.Ok<string, int>(GoodResultValue).GetError())).Should().Throw<InvalidOperationException>();
+
+    [Test]
+    public static void GetError_Error() => Result.Error<string, int>(GoodErrorValue).GetError().Should().Be(GoodErrorValue);
+
+    [Test]
+    public static void IsOk_Ok() => Result.Ok<string, int>(GoodResultValue).IsOk().Should().BeTrue();
+
+    [Test]
+    public static void IsOk_Error() => Result.Error<string, int>(GoodErrorValue).IsOk().Should().BeFalse();
+
+    [Test]
+    public static void IsError_Ok() => Result.Ok<string, int>(GoodResultValue).IsError().Should().BeFalse();
+
+    [Test]
+    public static void IsError_Error() => Result.Error<string, int>(GoodErrorValue).IsError().Should().BeTrue();
 
     [Test]
     public static void Iter_Ok()

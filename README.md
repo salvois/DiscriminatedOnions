@@ -187,7 +187,7 @@ public static class Option
     /// Returns true if option is None, discouraged
     public static bool IsNone<T>(this Option<T> option);
 
-    /// Return true if option is Some(v), discouraged
+    /// Returns true if option is Some(v), discouraged
     public static bool IsSome<T>(this Option<T> option);
 
     /// Executes action(v) if option is Some(v)
@@ -374,6 +374,18 @@ public static class Result
     /// Returns Ok(mapping(v)) is result is Ok(v) or Error(e) if it is Error(e)
     public static Result<U, TError>       Map     <T, TError, U>(this Result<T, TError> result, Func<T, U>       mapping);
     public static Task<Result<U, TError>> MapAsync<T, TError, U>(this Result<T, TError> result, Func<T, Task<U>> mapping);
+
+    /// Returns v if result is Ok(v) or throws an InvalidOperationException if it is Error(e), discouraged
+    public static T Get<T, TError>(this Result<T, TError> result);
+
+    /// Returns e if result is Error(e) or throws an InvalidOperationException if it is Ok(v), discouraged
+    public static TError GetError<T, TError>(this Result<T, TError> result);
+
+    /// Returns true if result is Error(e), discouraged
+    public static bool IsError<T, TError>(this Result<T, TError> result);
+
+    /// Returns true if result is Ok(v), discouraged
+    public static bool IsOk<T, TError>(this Result<T, TError> result);
 
     /// Executes action(v) if result is Ok(v)
     public static void Iter     <T, TError>(this Result<T, TError> result, Action<T>     action);
