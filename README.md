@@ -31,6 +31,7 @@ I have written this library because I needed it and because it was fun, but it d
 
 ## Changelog
 
+* 1.4: `DefaultWithAsync` and `OrElseAsync` for `Option`
 * 1.3: Fluent `ToOption` for `Option`; non-empty collections; helpers for read-only collections
 * 1.2: Async versions of `bind`, `iter` and `map` for `Option` and `Result`
 * 1.1: `Option`-based `TryGetValue` for dictionaries
@@ -149,7 +150,7 @@ public static class Option
 
 
     /// Returns binder(v) if option is Some(v) or None if it is None
-    public static Option<U> Bind<T, U>(this Option<T> option, Func<T, Option<U>> binder);
+    public static Option<U>       Bind     <T, U>(this Option<T> option, Func<T, Option<U>>       binder);
     public static Task<Option<U>> BindAsync<T, U>(this Option<T> option, Func<T, Task<Option<U>>> binder);
 
     /// Returns true if option is Some(value) or false if it is None
@@ -162,7 +163,8 @@ public static class Option
     public static T DefaultValue<T>(this Option<T> option, T value);
 
     /// Returns v if option is Some(v) or defThunk() if it is None
-    public static T DefaultWith<T>(this Option<T> option, Func<T> defThunk);
+    public static T       DefaultWith     <T>(this Option<T> option, Func<T>       defThunk);
+    public static Task<T> DefaultWithAsync<T>(this Option<T> option, Func<Task<T>> defThunk);
 
     /// Returns predicate(v) if option is Some(v) or false if it is None
     public static bool Exists<T>(this Option<T> option, Func<T, bool> predicate);
@@ -189,11 +191,11 @@ public static class Option
     public static bool IsSome<T>(this Option<T> option);
 
     /// Executes action(v) if option is Some(v)
-    public static void Iter<T>(this Option<T> option, Action<T> action);
+    public static void Iter     <T>(this Option<T> option, Action<T>     action);
     public static Task IterAsync<T>(this Option<T> option, Func<T, Task> action);
 
     /// Returns Some(mapping(v)) if option is Some(v) or None if it is None
-    public static Option<U> Map<T, U>(this Option<T> option, Func<T, U> mapping);
+    public static Option<U>       Map     <T, U>(this Option<T> option, Func<T, U>       mapping);
     public static Task<Option<U>> MapAsync<T, U>(this Option<T> option, Func<T, Task<U>> mapping);
 
     /// Returns Some(mapping(v1, v2)) if options are Some(v1) and Some(v2) or None if at least one is None
@@ -212,7 +214,8 @@ public static class Option
     public static Option<T> OrElse<T>(this Option<T> option, Option<T> ifNone);
 
     /// Returns option if option is Some(v) or ifNoneThunk() if it is None
-    public static Option<T> OrElseWith<T>(this Option<T> option, Func<Option<T>> ifNoneThunk);
+    public static Option<T>       OrElseWith     <T>(this Option<T> option, Func<Option<T>>       ifNoneThunk);
+    public static Task<Option<T>> OrElseWithAsync<T>(this Option<T> option, Func<Task<Option<T>>> ifNoneThunk);
 
     /// Returns a single-element array containing v if option is Some(v) or an empty array if it is None
     public static T[] ToArray<T>(this Option<T> option);

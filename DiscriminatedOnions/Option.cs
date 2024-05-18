@@ -92,6 +92,10 @@ public static class Option
     public static T DefaultWith<T>(this Option<T> option, Func<T> defThunk) =>
         option.Match(defThunk, v => v);
 
+    /// Returns v if option is Some(v) or defThunk() if it is None
+    public static Task<T> DefaultWithAsync<T>(this Option<T> option, Func<Task<T>> defThunk) =>
+        option.Match(defThunk, Task.FromResult);
+
     /// Returns predicate(v) if option is Some(v) or false if it is None
     public static bool Exists<T>(this Option<T> option, Func<T, bool> predicate) =>
         option.Match(() => false, predicate);
@@ -174,6 +178,10 @@ public static class Option
     /// Returns option if option is Some(v) or ifNoneThunk() if it is None
     public static Option<T> OrElseWith<T>(this Option<T> option, Func<Option<T>> ifNoneThunk) =>
         option.Match(ifNoneThunk, _ => option);
+
+    /// Returns option if option is Some(v) or ifNoneThunk() if it is None
+    public static Task<Option<T>> OrElseWithAsync<T>(this Option<T> option, Func<Task<Option<T>>> ifNoneThunk) =>
+        option.Match(ifNoneThunk, _ => Task.FromResult(option));
 
     /// Returns a single-element array containing v if option is Some(v) or an empty array if it is None
     public static T[] ToArray<T>(this Option<T> option) =>

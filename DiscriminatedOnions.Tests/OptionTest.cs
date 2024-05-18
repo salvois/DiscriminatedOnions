@@ -158,6 +158,12 @@ public static class OptionTest
     public static void DefaultWith_None() => Option.None<string>().DefaultWith(() => "defaultValue").Should().Be("defaultValue");
 
     [Test]
+    public static async Task DefaultWithAsync_Some() => (await Option.Some("value").DefaultWithAsync(() => Task.FromResult("defaultValue"))).Should().Be("value");
+
+    [Test]
+    public static async Task DefaultWithAsync_None() => (await Option.None<string>().DefaultWithAsync(() => Task.FromResult("defaultValue"))).Should().Be("defaultValue");
+
+    [Test]
     public static void Exists_Some_Matching() => Option.Some("value").Exists(v => v == "value").Should().BeTrue();
 
     [Test]
@@ -332,6 +338,12 @@ public static class OptionTest
 
     [Test]
     public static void OrElseWith_None() => Option.None<string>().OrElseWith(() => Option.Some("defaultValue")).Should().Be(Option.Some("defaultValue"));
+
+    [Test]
+    public static async Task OrElseWithAsync_Some() => (await Option.Some("value").OrElseWithAsync(() => Task.FromResult(Option.Some("defaultValue")))).Should().Be(Option.Some("value"));
+
+    [Test]
+    public static async Task OrElseWithAsync_None() => (await Option.None<string>().OrElseWithAsync(() => Task.FromResult(Option.Some("defaultValue")))).Should().Be(Option.Some("defaultValue"));
 
     [Test]
     public static void ToNullable_NotNull() => Option.Some(42).ToNullable().Should().Be(42);
