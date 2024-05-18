@@ -368,15 +368,23 @@ public static class Result
 
 
     /// Returns binder(v) if result is Ok(v) or Error(e) if it is Error(e)
-    public static Result<U, TError> Bind<T, TError, U>(this Result<T, TError> result, Func<T, Result<U, TError>> binder);
+    public static Result<U, TError>       Bind     <T, TError, U>(this Result<T, TError> result, Func<T, Result<U, TError>>       binder);
     public static Task<Result<U, TError>> BindAsync<T, TError, U>(this Result<T, TError> result, Func<T, Task<Result<U, TError>>> binder);
 
     /// Returns Ok(mapping(v)) is result is Ok(v) or Error(e) if it is Error(e)
-    public static Result<U, TError> Map<T, TError, U>(this Result<T, TError> result, Func<T, U> mapping);
+    public static Result<U, TError>       Map     <T, TError, U>(this Result<T, TError> result, Func<T, U>       mapping);
     public static Task<Result<U, TError>> MapAsync<T, TError, U>(this Result<T, TError> result, Func<T, Task<U>> mapping);
 
+    /// Executes action(v) if result is Ok(v)
+    public static void Iter     <T, TError>(this Result<T, TError> result, Action<T>     action);
+    public static Task IterAsync<T, TError>(this Result<T, TError> result, Func<T, Task> action);
+
+    /// Executes action(e) if result is Error(e)
+    public static void IterError     <T, TError>(this Result<T, TError> result, Action<TError>     action);
+    public static Task IterErrorAsync<T, TError>(this Result<T, TError> result, Func<TError, Task> action);
+
     /// Returns Error(mapping(e)) if result is Error(e) or Ok(v) if it is Ok(v)
-    public static Result<T, U> MapError<T, TError, U>(this Result<T, TError> result, Func<TError, U> mapping);
+    public static Result<T, U>       MapError     <T, TError, U>(this Result<T, TError> result, Func<TError, U>       mapping);
     public static Task<Result<T, U>> MapErrorAsync<T, TError, U>(this Result<T, TError> result, Func<TError, Task<U>> mapping);
 }
 

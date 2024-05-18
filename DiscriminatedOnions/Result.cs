@@ -82,6 +82,28 @@ public static class Result
     public static Task<Result<U, TError>> BindAsync<T, TError, U>(this Result<T, TError> result, Func<T, Task<Result<U, TError>>> binder) =>
         result.Match(e => Task.FromResult(Error<U, TError>(e)), binder);
 
+    /// Executes action(v) if result is Ok(v)
+    public static void Iter<T, TError>(this Result<T, TError> result, Action<T> action)
+    {
+        if (result is { IsOk: true, ResultValue: var v })
+            action(v);
+    }
+
+    /// Executes action(v) if result is Ok(v)
+    public static Task IterAsync<T, TError>(this Result<T, TError> result, Func<T, Task> action) =>
+        result is { IsOk: true, ResultValue: var v } ? action(v) : Task.CompletedTask;
+
+    /// Executes action(e) if result is Error(e)
+    public static void IterError<T, TError>(this Result<T, TError> result, Action<TError> action)
+    {
+        if (result is { IsOk: false, ErrorValue: var e })
+            action(e);
+    }
+
+    /// Executes action(e) if result is Error(e)
+    public static Task IterErrorAsync<T, TError>(this Result<T, TError> result, Func<TError, Task> action) =>
+        result is { IsOk: false, ErrorValue: var e } ? action(e) : Task.CompletedTask;
+
     /// Returns Ok(mapping(v)) is result is Ok(v) or Error(e) if it is Error(e)
     public static Result<U, TError> Map<T, TError, U>(this Result<T, TError> result, Func<T, U> mapping) =>
         result.Match(Error<U, TError>, v => Ok<U, TError>(mapping(v)));

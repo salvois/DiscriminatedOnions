@@ -121,6 +121,86 @@ public static class ResultTest
         .Should().Be((42, DummyResultValue));
 
     [Test]
+    public static void Iter_Ok()
+    {
+        string? found = null;
+        Result.Ok<string, int>("resultValue").Iter(v => found = v);
+        found.Should().Be("resultValue");
+    }
+
+    [Test]
+    public static void Iter_Error()
+    {
+        string? found = null;
+        Result.Error<string, int>(42).Iter(v => found = v);
+        found.Should().BeNull();
+    }
+
+    [Test]
+    public static async Task IterAsync_Ok()
+    {
+        string? found = null;
+        await Result.Ok<string, int>("resultValue").IterAsync(v =>
+        {
+            found = v;
+            return Task.CompletedTask;
+        });
+        found.Should().Be("resultValue");
+    }
+
+    [Test]
+    public static async Task IterAsync_Error()
+    {
+        string? found = null;
+        await Result.Error<string, int>(42).IterAsync(v =>
+        {
+            found = v;
+            return Task.CompletedTask;
+        });
+        found.Should().BeNull();
+    }
+
+    [Test]
+    public static void IterError_Ok()
+    {
+        int? found = null;
+        Result.Ok<string, int>("resultValue").IterError(v => found = v);
+        found.Should().BeNull();
+    }
+
+    [Test]
+    public static void IterError_Error()
+    {
+        int? found = null;
+        Result.Error<string, int>(42).IterError(v => found = v);
+        found.Should().Be(42);
+    }
+
+    [Test]
+    public static async Task IterErrorAsync_Ok()
+    {
+        int? found = null;
+        await Result.Ok<string, int>("resultValue").IterErrorAsync(v =>
+        {
+            found = v;
+            return Task.CompletedTask;
+        });
+        found.Should().BeNull();
+    }
+
+    [Test]
+    public static async Task IterErrorAsync_Error()
+    {
+        int? found = null;
+        await Result.Error<string, int>(42).IterErrorAsync(v =>
+        {
+            found = v;
+            return Task.CompletedTask;
+        });
+        found.Should().Be(42);
+    }
+
+    [Test]
     public static void Map_Ok() =>
         Result.Ok<string, int>("resultValue")
             .Map(v => v + "Altered")
