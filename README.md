@@ -398,6 +398,9 @@ public static class Result
     /// Returns Error(mapping(e)) if result is Error(e) or Ok(v) if it is Ok(v)
     public static Result<T, U>       MapError     <T, TError, U>(this Result<T, TError> result, Func<TError, U>       mapping);
     public static Task<Result<T, U>> MapErrorAsync<T, TError, U>(this Result<T, TError> result, Func<TError, Task<U>> mapping);
+
+    /// Returns Some(v) if result is Ok(v) otherwise returns None
+    public static Option<T> ToOption<T, TError>(this Result<T, TError> result);
 }
 
 Result<string, int> ok = Result.Ok<string, int>("result value");

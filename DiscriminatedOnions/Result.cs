@@ -97,7 +97,7 @@ public static class Result
     /// Returns true if result is Ok(v), discouraged
     public static bool IsOk<T, TError>(this Result<T, TError> result) =>
         result.IsOk;
-    
+
     /// Executes action(v) if result is Ok(v)
     public static void Iter<T, TError>(this Result<T, TError> result, Action<T> action)
     {
@@ -135,4 +135,8 @@ public static class Result
     /// Returns Error(mapping(e)) if result is Error(e) or Ok(v) if it is Ok(v)
     public static Task<Result<T, U>> MapErrorAsync<T, TError, U>(this Result<T, TError> result, Func<TError, Task<U>> mapping) =>
         result.Match(async e => Error<T, U>(await mapping(e)), v => Task.FromResult(Ok<T, U>(v)));
+
+    /// Returns Some(v) if result is Ok(v) otherwise returns None
+    public static Option<T> ToOption<T, TError>(this Result<T, TError> result) =>
+        result.Match(_ => Option.None<T>(), Option.Some);
 }

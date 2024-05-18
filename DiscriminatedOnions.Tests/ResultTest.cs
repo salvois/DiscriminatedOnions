@@ -298,4 +298,11 @@ public static class ResultTest
                 onError: e => (e, DummyResultValue),
                 onOk: v => (DummyErrorValue, v))))
         .Should().Be((43, DummyResultValue));
+
+
+    [Test]
+    public static void ToOption_Ok() => Result.Ok<string, int>(GoodResultValue).ToOption().Should().Be(Option.Some(GoodResultValue));
+
+    [Test]
+    public static void ToOption_Error() => Result.Error<string, int>(42).ToOption().Should().Be(Option.None<string>());
 }
