@@ -31,7 +31,7 @@ I have written this library because I needed it and because it was fun, but it d
 
 ## Changelog
 
-* 1.4: `DefaultWithAsync`, `OrElseAsync` and `TryGet` for `Option`, `Result` parity with `Option`
+* 1.4: `DefaultWithAsync`, `OrElseAsync` and `TryGet` for `Option`; `Result` parity with `Option`; `Unit.Call`
 * 1.3: Fluent `ToOption` for `Option`; non-empty collections; helpers for read-only collections
 * 1.2: Async versions of `bind`, `iter` and `map` for `Option` and `Result`
 * 1.1: `Option`-based `TryGetValue` for dictionaries
@@ -496,15 +496,20 @@ This library provides no features to create such types, because the built-in fea
 
 OK, this is not a discriminated union, but we may need it when we work with generic functions. If you ever had to provide two nearly identical implementations, one taking `Action` and one taking `Func`, just because you cannot write `Func<void>` you know what I mean.
 
-Think of the unit type as the `void` as it should have been, that is a type useable as generic type argument (looks that may be the case in future C# versions).
+Think of the unit type as the `void` as it should have been, that is a type useable as generic type argument (looks like that may be the case in future C# versions).
 
-This library provides the `Unit` type defined simply as a `record` with no properties. You can use it in your function signatures where you have to return nothing (that is, functions useful only for their side effects). The `unit` type in F# can only have one value, that is `()`. To emulate this in C#, the `Unit` record provides a static value named `Value` (which happens to be `null` as in the F# implementation) and a private constructor to prevent creating other `Unit` values:
+This library provides the `Unit` type defined simply as a `record` with no properties. You can use it in your function signatures where you have to return nothing (that is, functions useful only for their side effects). The `unit` type in F# can only have one value, that is `()`. To emulate this in C#, the `Unit` record provides a static value named `Value` (which happens to be `null` as in the F# implementation) and a private constructor to prevent creating other `Unit` values.
+
+Finally, `Unit.Call` may be used in cases you have a `void` returning function and you want to call it and return `Unit` in a concise way.
 
 ```csharp
 public record Unit
 {
-    private Unit() { }
+    /// The singleton value for Unit
     public static readonly Unit Value = null!;
+
+    /// Calls action() and returns Unit.Value rather than void
+    public static Unit Call(Action action);
 }
 
 // Let's say you did not implement an overload of Shape.Match accepting Action's:
@@ -513,13 +518,17 @@ shape.Match(
     {
         Console.WriteLine($"Rectangle with width {r.Width} and height {r.Height}.");
         return Unit.Value; // unfortunately you have to return it explicitly
-    }
+    },
     onCircle: c =>
     {
         Console.WriteLine($"Circle with radius {c.Radius}.");
         return Unit.Value;
-    }
-);
+    });
+
+// Or more concisely
+shape.Match(
+    onRectangle: r => Unit.Call(() => Console.WriteLine($"Rectangle with width {r.Width} and height {r.Height}.")),
+    onCircle: c => Unit.Call(() => Console.WriteLine($"Circle with radius {c.Radius}.")));
 ```
 
 In cases like the one above, you could just return `0`, `false`, `""`, `42` or anything else that would be discarded, but having an explicit unit type may help conveying the intent better.

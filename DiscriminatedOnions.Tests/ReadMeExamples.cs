@@ -24,7 +24,7 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -35,6 +35,47 @@ namespace DiscriminatedOnions.Tests;
 [TestFixture]
 public static class ReadMeExamples
 {
+    private abstract record Shape
+    {
+        public record Rectangle(double Width, double Height) : Shape;
+        public record Circle(double Radius) : Shape;
+
+        public U Match<U>(Func<Rectangle, U> onRectangle, Func<Circle, U> onCircle) =>
+            this switch
+            {
+                Rectangle r => onRectangle(r),
+                Circle c => onCircle(c),
+                _ => throw new ArgumentOutOfRangeException()
+            };
+
+        private Shape() { }
+    }
+
+    private static double ComputeAreaUsingSwitch(this Shape shape) =>
+        shape switch
+        {
+            Shape.Rectangle(var width, var height) => width * height,
+            Shape.Circle(var radius) => radius * radius * Math.PI,
+            _ => throw new ArgumentOutOfRangeException() // This is one point where this approach is inferior to real discriminated unions
+        };
+
+    private static double ComputeAreaUsingMatch(this Shape shape) =>
+        shape.Match(
+            onRectangle: r => r.Width * r.Height,
+            onCircle: c => c.Radius * c.Radius * Math.PI);
+
+    [Test]
+    public static void SwitchRectangle() => new Shape.Rectangle(10.0, 1.3).ComputeAreaUsingSwitch().Should().Be(10.0 * 1.3);
+
+    [Test]
+    public static void SwitchCircle() => new Shape.Circle(1.0).ComputeAreaUsingSwitch().Should().Be(1.0 * 1.0 * Math.PI);
+
+    [Test]
+    public static void MatchRectangle() => new Shape.Rectangle(10.0, 1.3).ComputeAreaUsingMatch().Should().Be(10.0 * 1.3);
+
+    [Test]
+    public static void MatchCircle() => new Shape.Circle(1.0).ComputeAreaUsingMatch().Should().Be(1.0 * 1.0 * Math.PI);
+
     [Test]
     public static void Option_Map_Some()
     {
@@ -126,5 +167,31 @@ public static class ReadMeExamples
         const int twenty = 20;
         int maybePiped = twenty.PipeIf(v => v < 10, v => v * 2);
         maybePiped.Should().Be(20);
+    }
+
+    [Test]
+    public static void ReturningUnit()
+    {
+        new Shape.Circle(1.0).Match(
+                onRectangle: r =>
+                {
+                    Console.WriteLine($"Rectangle with width {r.Width} and height {r.Height}.");
+                    return Unit.Value; // unfortunately you have to return it explicitly
+                },
+                onCircle: c =>
+                {
+                    Console.WriteLine($"Circle with radius {c.Radius}.");
+                    return Unit.Value;
+                })
+            .Should().Be(Unit.Value);
+    }
+
+    [Test]
+    public static void Unit_Call()
+    {
+        new Shape.Circle(1.0).Match(
+                onRectangle: r => Unit.Call(() => Console.WriteLine($"Rectangle with width {r.Width} and height {r.Height}.")),
+                onCircle: c => Unit.Call(() => Console.WriteLine($"Circle with radius {c.Radius}.")))
+            .Should().Be(Unit.Value);
     }
 }

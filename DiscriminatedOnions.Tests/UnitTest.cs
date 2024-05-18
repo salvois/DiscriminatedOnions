@@ -34,4 +34,12 @@ public static class UnitTest
 {
     [Test]
     public static void Value() => Option.Some(42).Match(onNone: () => Unit.Value, onSome: _ => Unit.Value).Should().BeNull();
+
+    [Test]
+    public static void Call()
+    {
+        var called = false;
+        Unit.Call(() => called = true).Should().Be(Unit.Value);
+        called.Should().BeTrue();
+    }
 }
