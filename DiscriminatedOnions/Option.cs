@@ -34,8 +34,8 @@ namespace DiscriminatedOnions;
 /// Union type that can represent either Some(value) or None
 public readonly record struct Option<T>
 {
-    public bool IsSome { get; }
-    public T Value { get; }
+    public bool IsSome { get; init; }
+    public T Value { get; init; }
 
     public U Match<U>(Func<U> onNone, Func<T, U> onSome) =>
         IsSome ? onSome(Value) : onNone();

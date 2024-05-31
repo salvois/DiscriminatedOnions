@@ -99,6 +99,18 @@ public static class OptionTest
     public static void NotEquivalency_Some() => Option.Some("value").Should().NotBeEquivalentTo(Option.Some("anotherValue"));
 
     [Test]
+    public static void SystemTextJson_None() =>
+        System.Text.Json.JsonSerializer.Serialize(Option.None<string>())
+            .Pipe(s => System.Text.Json.JsonSerializer.Deserialize<Option<string>>(s))
+            .Should().Be(Option.None<string>());
+
+    [Test]
+    public static void SystemTextJson_Some() =>
+        System.Text.Json.JsonSerializer.Serialize(Option.Some("value"))
+            .Pipe(s => System.Text.Json.JsonSerializer.Deserialize<Option<string>>(s))
+            .Should().Be(Option.Some("value"));
+
+    [Test]
     public static void Bind_Some() =>
         Option.Some(GoodValue)
             .Bind(v => Option.Some(v + "Altered"))

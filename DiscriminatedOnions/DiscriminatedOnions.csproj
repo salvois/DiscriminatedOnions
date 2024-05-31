@@ -3,7 +3,7 @@
 	<PropertyGroup>
 		<TargetFramework>net6.0</TargetFramework>
 		<Nullable>enable</Nullable>
-		<Version>1.4.0</Version>
+		<Version>1.4.1</Version>
 		<Authors>Salvo Isaja</Authors>
 		<Company>Salvo Isaja</Company>
 		<Copyright>Copyright 2022-2024  Salvatore Isaja</Copyright>
