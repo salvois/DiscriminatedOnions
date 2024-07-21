@@ -87,6 +87,39 @@ public static class ResultTest
     [Test]
     public static void ToString_Error() => Result.Error<string, int>(42).ToString().Should().Be("Error(42)");
 
+
+    [Test]
+    public static void Implicit_Ok() =>
+        ((Result<string, int>)Result.Ok("resultValue"))
+        .Match(
+            onError: e => (e, DummyResultValue),
+            onOk: v => (DummyErrorValue, v))
+        .Should().Be((DummyErrorValue, "resultValue"));
+
+    [Test]
+    public static void Implicit_Error() =>
+        ((Result<string, int>)Result.Error(42))
+        .Match(
+            onError: e => (e, DummyResultValue),
+            onOk: v => (DummyErrorValue, v))
+        .Should().Be((42, DummyResultValue));
+
+    [Test]
+    public static void Implicit_SameType_Ok() =>
+        ((Result<string, string>)Result.Ok("resultValue"))
+        .Match(
+            onError: e => (e, "x"),
+            onOk: v => ("x", v))
+        .Should().Be(("x", "resultValue"));
+
+    [Test]
+    public static void Implicit_SameType_Error() =>
+        ((Result<string, string>)Result.Error("errorValue"))
+        .Match(
+            onError: e => (e, "x"),
+            onOk: v => ("x", v))
+        .Should().Be(("errorValue", "x"));
+
     [Test]
     public static void Bind_Ok() =>
         Result.Ok<string, int>("resultValue")

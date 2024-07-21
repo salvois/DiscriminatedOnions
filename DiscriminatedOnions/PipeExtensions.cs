@@ -31,6 +31,13 @@ namespace DiscriminatedOnions;
 
 public static class PipeExtensions
 {
+    /// Calls the void-returning next(previous) and returns Unit
+    public static Unit Pipe<TIn>(this TIn previous, Action<TIn> next)
+    {
+        next(previous);
+        return Unit.Value;
+    }
+
     /// Returns next(previous)
     public static TOut Pipe<TIn, TOut>(this TIn previous, Func<TIn, TOut> next) =>
         next(previous);

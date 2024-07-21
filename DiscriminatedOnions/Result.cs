@@ -57,12 +57,32 @@ public readonly record struct Result<T, TError>
     public override string ToString() =>
         IsOk ? $"Ok({ResultValue})" : $"Error({ErrorValue})";
 
+    public static implicit operator Result<T, TError>(PartialResultOk<T> result) =>
+        Result.Ok<T, TError>(result.ResultValue);
+
+    public static implicit operator Result<T, TError>(PartialResultError<TError> result) =>
+        Result.Error<T, TError>(result.ErrorValue);
+
     internal Result(bool isOk, T resultValue, TError errorValue)
     {
         IsOk = isOk;
         ResultValue = resultValue;
         ErrorValue = errorValue;
     }
+}
+
+/// Type representing an Ok result that can be implicitly assigned to a Result&lt;T, TError&gt; of any TError, meant to be used through Result.Ok&lt;T&gt;(T resultValue)
+public readonly record struct PartialResultOk<T>
+{
+    internal PartialResultOk(T resultValue) => ResultValue = resultValue;
+    internal T ResultValue { get; }
+}
+
+/// Type representing an Error result that can be implicitly assigned to a Result&lt;T, TError&gt; of any T, meant to be used through Result.Error&lt;TError&gt;(TError errorValue)
+public readonly record struct PartialResultError<TError>
+{
+    internal PartialResultError(TError errorValue) => ErrorValue = errorValue;
+    internal TError ErrorValue { get; }
 }
 
 /// Utility functions for the Result type
@@ -75,6 +95,14 @@ public static class Result
     /// Creates a new result containing Error(errorValue)
     public static Result<T, TError> Error<T, TError>(TError errorValue) =>
         new(false, default!, errorValue);
+
+    /// Returns an object representing an Ok(resultValue) that can be implicitly assigned to a Result&lt;T, TError&gt; of any TError
+    public static PartialResultOk<T> Ok<T>(T resultValue) =>
+        new(resultValue);
+
+    /// Returns an object representing an Error(errorValue) that can be implicitly assigned to a Result&lt;T, TError&gt; of any T
+    public static PartialResultError<TError> Error<TError>(TError errorValue) =>
+        new(errorValue);
 
     /// Returns binder(v) if result is Ok(v) or Error(e) if it is Error(e)
     public static Result<U, TError> Bind<T, TError, U>(this Result<T, TError> result, Func<T, Result<U, TError>> binder) =>

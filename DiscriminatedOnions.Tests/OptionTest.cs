@@ -78,6 +78,12 @@ public static class OptionTest
     public static void ToString_None() => Option.None<int>().ToString().Should().Be("None");
 
     [Test]
+    public static void Implicit_None() =>
+        ((Option<string>)Option.Nothing)
+            .Match(onNone: () => DummyValue, onSome: v => v)
+            .Should().Be(DummyValue);
+
+    [Test]
     public static void Equality_Some() => Option.Some("value").Should().Be(Option.Some("value"));
 
     [Test]

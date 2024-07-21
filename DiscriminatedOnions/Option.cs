@@ -50,11 +50,20 @@ public readonly record struct Option<T>
 
     internal static readonly Option<T> None = new(false, default!);
 
+    public static implicit operator Option<T>(PartialOptionNone _) => None;
+
     internal Option(bool isSome, T value)
     {
         IsSome = isSome;
         Value = value;
     }
+}
+
+/// Type representing a None option that can be implicitly assigned to an Option&lt;T&gt; of any T, meant to be used through Option.Nothing
+public record PartialOptionNone
+{
+    private PartialOptionNone() { }
+    internal static readonly PartialOptionNone None = new();
 }
 
 /// Utility functions for the Option type
@@ -67,7 +76,11 @@ public static class Option
     public static Option<T> None<T>() => Option<T>.None;
 
     /// Returns an option representing None wrapped in a Task
+    [Obsolete("Use Task.FromResult(Option.None<T>())")]
     public static Task<Option<T>> TaskNone<T>() => Task.FromResult(Option<T>.None);
+
+    /// Returns an object representing a None that can be implicitly assigned to an Option&lt;T&gt; of any T
+    public static readonly PartialOptionNone Nothing = PartialOptionNone.None;
 
     /// Returns binder(v) if option is Some(v) or None if it is None
     public static Option<U> Bind<T, U>(this Option<T> option, Func<T, Option<U>> binder) =>
@@ -75,7 +88,7 @@ public static class Option
 
     /// Returns binder(v) if option is Some(v) or None if it is None
     public static Task<Option<U>> BindAsync<T, U>(this Option<T> option, Func<T, Task<Option<U>>> binder) =>
-        option.Match(TaskNone<U>, binder);
+        option.Match(() => Task.FromResult(Option<U>.None), binder);
 
     /// Returns true if option is Some(value) or false if it is not
     public static bool Contains<T>(this Option<T> option, T value) =>

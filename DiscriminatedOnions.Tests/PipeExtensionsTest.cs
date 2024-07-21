@@ -24,6 +24,7 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using FluentAssertions;
 using NUnit.Framework;
@@ -38,6 +39,14 @@ public static class PipeExtensionsTest
     private static int StrDouble(string v) => Double(int.Parse(v));
     private static Task<int> StrDoubleAsync(string v) => Task.FromResult(StrDouble(v));
     private static bool IsOdd(int v) => v % 2 != 0;
+
+    [Test]
+    public static void Pipe_Action()
+    {
+        var list = new List<int>();
+        21.Pipe(list.Add).Should().Be(Unit.Value);
+        list.Should().BeEquivalentTo(new[] { 21 });
+    }
 
     [Test]
     public static void Pipe_SyncSync() => "21".Pipe(StrDouble).Should().Be(42);

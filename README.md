@@ -31,6 +31,7 @@ I have written this library because I needed it and because it was fun, but it d
 
 ## Changelog
 
+* 1.5: `Result.Ok<T>`, `Result.Error<TError>` and `Option.Nothing` to reduce type noise in instantiation; `Pipe` for void functions
 * 1.4: `DefaultWithAsync`, `OrElseAsync` and `TryGet` for `Option`; `Result` parity with `Option`; `Unit.Call`
 * 1.3: Fluent `ToOption` for `Option`; non-empty collections; helpers for read-only collections
 * 1.2: Async versions of `bind`, `iter` and `map` for `Option` and `Result`
@@ -119,9 +120,6 @@ public readonly record struct Option<T>
     public U Match<U>(Func<U> onNone, Func<T, U> onSome);
     public void Match(Action onNone, Action<T> onSome);
     public override string ToString();
-
-    internal static readonly Option<T> None = new(false, default!);
-    internal Option(bool isSome, T value);
 }
 ```
 Properties are public for compatibility with test libraries, and to let to use C# pattern matching in those cases `Match` could not be used. **Accessing `IsSome` and `Value` directly (especially the latter) is generally discouraged**. The constructor is internal to force you to use one of the named constructors explained below.
@@ -130,11 +128,13 @@ A `ToString` override provides representations such as `"Some(Value)"` or `"None
 
 ### Utility functions for the Option type
 
-Together with the `Option<T>` type itself, a companion static class `Option` of utility functions is provided. For a full description of those functions please refer to the official documentation of the [F# Option module](https://fsharp.github.io/fsharp-core-docs/reference/fsharp-core-optionmodule.html).
+Together with the `Option<T>` type itself, a companion static class `Option` of utility functions is provided. For a full description of those functions please refer to the official documentation of the [F# Option module](https://fsharp.github.io/fsharp-core-docs/reference/fsharp-core-optionmodule.html). Moreover, some novel functions not included in the F# standard library are included, such as async versions that may be useful when working with I/O.
 
-Moreover, some novel functions not included in the F# standard library are included, such as async versions that may be useful when working with I/O.
+The `Option` static class provides `Some<T>(T value)`, `None<T>()` and `Nothing` to instantiate option values.
 
-The `Option` static class also provides named constructors to create `Option<T>` values. The named constructor for `Some` helps the compiler deduce the generic argument for `T` reducing some bolilerplate, whereas the named constructor for `None` returns a singleton instance for `T`.
+The compiler can deduce `T` for `Some<T>(T value)`, so you may want to omit it and just pass your value, as in `Option.Some("I have a value")`. You must explicitly specify `T` for `None`, though, so you have to write `Option.None<string>()`.
+
+For convenience in creating None values, the non-generic `Option.Nothing` may be used. It returns a singleton instance of the `PartialOptionNone` type, that is not meant to be used directly, but can be implicitly assigned to any `Option<T>` in cases you don't want to specify `T` explicitly (by the way, `Nothing` was chosen because `None` is already there with the same signature).
 
 ```csharp
 public static class Option
@@ -145,8 +145,8 @@ public static class Option
     /// Returns an option representing None
     public static Option<T> None<T>();
 
-    /// Returns an option representing None wrapped in a Task
-    public static Task<Option<T>> TaskNone<T>();
+    /// Returns an object representing a None that can be implicitly assigned to an Option<T> of any T
+    public static PartialOptionNone Nothing;
 
 
     /// Returns binder(v) if option is Some(v) or None if it is None
@@ -244,7 +244,7 @@ Option<string> someString = Option.Some("I have a value");
 Option<string> mapped = someString.Map(v => v + " today");
 // returns Option.Some("I have a value today")
 
-Option<string> noString = Option.None<string>();
+Option<string> noString = Option.None<string>(); // or just Option.Nothing
 string defaulted = noString.DefaultValue("default value");
 // returns "default value"
 
@@ -355,11 +355,13 @@ A `ToString` override provides representations such as `"Ok(ResultValue)"` or `"
 
 ### Utility functions for the Result type
 
-Together with the `Result<T, TError>` type itself, a companion static class `Result` of utility functions is provided. Please refer to the official documentation of the [F# Result module](https://fsharp.github.io/fsharp-core-docs/reference/fsharp-core-resultmodule.html) for a full descrition of them.
-
-Moreover, some novel functions not included in the F# standard library are included, such as async versions that may be useful when working with I/O.
+Together with the `Result<T, TError>` type itself, a companion static class `Result` of utility functions is provided. Please refer to the official documentation of the [F# Result module](https://fsharp.github.io/fsharp-core-docs/reference/fsharp-core-resultmodule.html) for a full descrition of them. Moreover, some novel functions not included in the F# standard library are included, such as async versions that may be useful when working with I/O.
 
 The `Bind` function is especially very convenient when chaining functions when the result of the previous one becomes the input of the next one, something described as [Railway oriented programming](https://fsharpforfunandprofit.com/posts/recipe-part2/) in the famous [F# for Fun and Profit](https://fsharpforfunandprofit.com/) site.
+
+The `Result` static class provides `Ok<T, TError>(T resultValue)`, `Error<T, TError>(TError errorValue)`, `Ok<T>(T resultValue)` and `Error<TError>(TError errorValue)` to instantiate option values.
+
+The first two require you to specify `T` and `TError` every time, because the compiler is not able to deduce both from arguments. The last two may be used to write more concise code by omitting types: respectively, they return instances of the `PartialResultOk<T>` and `PartialResultError<TError>` types, that are not meant to be used directly, but can be implicitly assigned to any `Result<T, TError>`.
 
 ```csharp
 public static class Result
@@ -369,6 +371,12 @@ public static class Result
 
     /// Creates a new result containing Error(errorValue)
     public static Result<T, TError> Error<T, TError>(TError errorValue);
+
+    /// Returns an object representing an Ok(resultValue) that can be implicitly assigned to a Result<T, TError> of any TError
+    public static PartialResultOk<T> Ok<T>(T resultValue);
+
+    /// Returns an object representing an Error(errorValue) that can be implicitly assigned to a Result<T, TError> of any T
+    public static PartialResultError<TError> Error<TError>(TError errorValue);
 
 
     /// Returns binder(v) if result is Ok(v) or Error(e) if it is Error(e)
@@ -446,11 +454,11 @@ public static class Result
     public static bool TryGetError<T, TError>(this Result<T, TError> result, [MaybeNullWhen(false)] out TError errorValue) where TError : class;
 }
 
-Result<string, int> ok = Result.Ok<string, int>("result value");
+Result<string, int> ok = Result.Ok<string, int>("result value"); // or just Result.Ok("result value")
 Result<string, int> boundOk = ok.Bind(v => Result.Ok<string, int>("beautiful " + v));
 // returns Result.Ok<string, int>("beautiful result value")
 
-Result<string, int> error = Result.Error<string, int>(42);
+Result<string, int> error = Result.Error<string, int>(42); // or just Result.Error(42)
 Result<string, int> boundError = error.Bind(v => Result.Ok<string, int>("beautiful " + v));
 // returns Result.Error<string, int>(42), short-circuiting
 
@@ -535,18 +543,21 @@ In cases like the one above, you could just return `0`, `false`, `""`, `42` or a
 
 ## Piping function calls
 
-A feature commonly used when working with functions is calling them in a so-called pipeline where the output of the previous function becomes the input of the next one. F# uses its signature `|>` (pipe) operator to facilitate this. In general C# uses extension methods to offer similar functionality.
+A feature commonly used when working with functions is calling them in a so-called pipeline where the output of the previous function becomes the input of the next one. F# uses its signature `|>` (pipe) operator to facilitate this. C# generally uses extension methods to offer similar functionality.
 
 This library provides the following extension methods to emulate the pipe operator, letting you chain multiple function calls without writing ad hoc extension methods:
 
 ```csharp
 public static class PipeExtensions
 {
-    public static TOut Pipe<TIn, TOut>(this TIn previous, Func<TIn, TOut> next) =>
-        next(previous);
+    /// Calls the void-returning next(previous) and returns Unit
+    public static Unit Pipe<TIn>(this TIn previous, Action<TIn> next);
 
-    public static T PipeIf<T>(this T previous, Func<T, bool> predicate, Func<T, T> next) =>
-        predicate(previous) ? next(previous) : previous;
+    /// Returns next(previous)
+    public static TOut Pipe<TIn, TOut>(this TIn previous, Func<TIn, TOut> next);
+
+    /// Returns next(previous) if predicate(previous) is true otherwise previous is passed through
+    public static T PipeIf<T>(this T previous, Func<T, bool> predicate, Func<T, T> next);
 }
 
 const int twenty = 20;

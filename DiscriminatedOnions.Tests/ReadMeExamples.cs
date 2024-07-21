@@ -93,6 +93,14 @@ public static class ReadMeExamples
     }
 
     [Test]
+    public static void Option_Nothing_DefaultValue()
+    {
+        Option<string> noString = Option.Nothing;
+        string defaulted = noString.DefaultValue("default value");
+        defaulted.Should().Be("default value");
+    }
+
+    [Test]
     public static async Task Option_BindAsync_Some()
     {
         Option<string> someString = Option.Some("I have a value");
@@ -139,6 +147,22 @@ public static class ReadMeExamples
     public static void Result_Bind_Error()
     {
         Result<string, int> error = Result.Error<string, int>(42);
+        Result<string, int> boundError = error.Bind(v => Result.Ok<string, int>("beautiful " + v));
+        boundError.Should().Be(Result.Error<string, int>(42));
+    }
+
+    [Test]
+    public static void Result_Implicit_Bind_Ok()
+    {
+        Result<string, int> ok = Result.Ok("result value");
+        Result<string, int> boundOk = ok.Bind(v => Result.Ok<string, int>("beautiful " + v));
+        boundOk.Should().Be(Result.Ok<string, int>("beautiful result value"));
+    }
+
+    [Test]
+    public static void Result_Implicit_Bind_Error()
+    {
+        Result<string, int> error = Result.Error(42);
         Result<string, int> boundError = error.Bind(v => Result.Ok<string, int>("beautiful " + v));
         boundError.Should().Be(Result.Error<string, int>(42));
     }
