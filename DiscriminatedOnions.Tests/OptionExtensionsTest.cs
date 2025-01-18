@@ -26,8 +26,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using FluentAssertions;
 using NUnit.Framework;
+using Shouldly;
 
 namespace DiscriminatedOnions.Tests;
 
@@ -37,26 +37,26 @@ public static class OptionExtensionsTest
     private static readonly Dictionary<int, string> TheDictionary = new() { [42] = "The answer" };
 
     [Test]
-    public static void Dictionary_TryGetValue_Present() => TheDictionary.TryGetValue(42).Should().Be(Option.Some("The answer"));
+    public static void Dictionary_TryGetValue_Present() => TheDictionary.TryGetValue(42).ShouldBe(Option.Some("The answer"));
 
     [Test]
-    public static void Dictionary_TryGetValue_Missing() => TheDictionary.TryGetValue(0).Should().Be(Option.None<string>());
+    public static void Dictionary_TryGetValue_Missing() => TheDictionary.TryGetValue(0).ShouldBe(Option.None<string>());
 
     [Test]
-    public static void ConcurrentDictionary_TryGetValue_Present() => new ConcurrentDictionary<int, string> { [42] = "The answer" }.TryGetValue(42).Should().Be(Option.Some("The answer"));
+    public static void ConcurrentDictionary_TryGetValue_Present() => new ConcurrentDictionary<int, string> { [42] = "The answer" }.TryGetValue(42).ShouldBe(Option.Some("The answer"));
 
     [Test]
-    public static void ConcurrentDictionary_TryGetValue_Missing() => new ConcurrentDictionary<int, string> { [42] = "The answer" }.TryGetValue(0).Should().Be(Option.None<string>());
+    public static void ConcurrentDictionary_TryGetValue_Missing() => new ConcurrentDictionary<int, string> { [42] = "The answer" }.TryGetValue(0).ShouldBe(Option.None<string>());
 
     [Test]
-    public static void IDictionary_TryGetValue_Present() => ((IDictionary<int, string>)TheDictionary).TryGetValue(42).Should().Be(Option.Some("The answer"));
+    public static void IDictionary_TryGetValue_Present() => ((IDictionary<int, string>)TheDictionary).TryGetValue(42).ShouldBe(Option.Some("The answer"));
 
     [Test]
-    public static void IDictionary_TryGetValue_Missing() => ((IDictionary<int, string>)TheDictionary).TryGetValue(0).Should().Be(Option.None<string>());
+    public static void IDictionary_TryGetValue_Missing() => ((IDictionary<int, string>)TheDictionary).TryGetValue(0).ShouldBe(Option.None<string>());
 
     [Test]
-    public static void IReadOnlyDictionary_TryGetValue_Present() => ((IReadOnlyDictionary<int, string>)TheDictionary).TryGetValue(42).Should().Be(Option.Some("The answer"));
+    public static void IReadOnlyDictionary_TryGetValue_Present() => ((IReadOnlyDictionary<int, string>)TheDictionary).TryGetValue(42).ShouldBe(Option.Some("The answer"));
 
     [Test]
-    public static void IReadOnlyDictionary_TryGetValue_Missing() => ((IReadOnlyDictionary<int, string>)TheDictionary).TryGetValue(0).Should().Be(Option.None<string>());
+    public static void IReadOnlyDictionary_TryGetValue_Missing() => ((IReadOnlyDictionary<int, string>)TheDictionary).TryGetValue(0).ShouldBe(Option.None<string>());
 }

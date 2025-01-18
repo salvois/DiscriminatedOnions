@@ -26,8 +26,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 using System;
 using System.Threading.Tasks;
-using FluentAssertions;
 using NUnit.Framework;
+using Shouldly;
 
 namespace DiscriminatedOnions.Tests;
 
@@ -45,7 +45,7 @@ public static class ResultTest
             .Match(
                 onError: e => (e, DummyResultValue),
                 onOk: v => (DummyErrorValue, v))
-            .Should().Be((DummyErrorValue, "resultValue"));
+            .ShouldBe((DummyErrorValue, "resultValue"));
 
     [Test]
     public static void Error() =>
@@ -53,7 +53,7 @@ public static class ResultTest
             .Match(
                 onError: e => (e, DummyResultValue),
                 onOk: v => (DummyErrorValue, v))
-            .Should().Be((42, DummyResultValue));
+            .ShouldBe((42, DummyResultValue));
 
     [Test]
     public static void Ok_Statement()
@@ -64,8 +64,8 @@ public static class ResultTest
             .Match(
                 onError: e => { actualErrorValue = e; },
                 onOk: v => { actualResultValue = v; });
-        actualResultValue.Should().Be("resultValue");
-        actualErrorValue.Should().Be(DummyErrorValue);
+        actualResultValue.ShouldBe("resultValue");
+        actualErrorValue.ShouldBe(DummyErrorValue);
     }
 
     [Test]
@@ -77,15 +77,15 @@ public static class ResultTest
             .Match(
                 onError: e => { actualErrorValue = e; },
                 onOk: v => { actualResultValue = v; });
-        actualResultValue.Should().Be(DummyResultValue);
-        actualErrorValue.Should().Be(42);
+        actualResultValue.ShouldBe(DummyResultValue);
+        actualErrorValue.ShouldBe(42);
     }
 
     [Test]
-    public static void ToString_Ok() => Result.Ok<string, int>("resultValue").ToString().Should().Be("Ok(resultValue)");
+    public static void ToString_Ok() => Result.Ok<string, int>("resultValue").ToString().ShouldBe("Ok(resultValue)");
 
     [Test]
-    public static void ToString_Error() => Result.Error<string, int>(42).ToString().Should().Be("Error(42)");
+    public static void ToString_Error() => Result.Error<string, int>(42).ToString().ShouldBe("Error(42)");
 
 
     [Test]
@@ -94,7 +94,7 @@ public static class ResultTest
         .Match(
             onError: e => (e, DummyResultValue),
             onOk: v => (DummyErrorValue, v))
-        .Should().Be((DummyErrorValue, "resultValue"));
+        .ShouldBe((DummyErrorValue, "resultValue"));
 
     [Test]
     public static void Implicit_Error() =>
@@ -102,7 +102,7 @@ public static class ResultTest
         .Match(
             onError: e => (e, DummyResultValue),
             onOk: v => (DummyErrorValue, v))
-        .Should().Be((42, DummyResultValue));
+        .ShouldBe((42, DummyResultValue));
 
     [Test]
     public static void Implicit_SameType_Ok() =>
@@ -110,7 +110,7 @@ public static class ResultTest
         .Match(
             onError: e => (e, "x"),
             onOk: v => ("x", v))
-        .Should().Be(("x", "resultValue"));
+        .ShouldBe(("x", "resultValue"));
 
     [Test]
     public static void Implicit_SameType_Error() =>
@@ -118,7 +118,7 @@ public static class ResultTest
         .Match(
             onError: e => (e, "x"),
             onOk: v => ("x", v))
-        .Should().Be(("errorValue", "x"));
+        .ShouldBe(("errorValue", "x"));
 
     [Test]
     public static void Bind_Ok() =>
@@ -127,7 +127,7 @@ public static class ResultTest
             .Match(
                 onError: e => (e, DummyResultValue),
                 onOk: v => (DummyErrorValue, v))
-            .Should().Be((DummyErrorValue, "resultValueAltered"));
+            .ShouldBe((DummyErrorValue, "resultValueAltered"));
 
     [Test]
     public static void Bind_Error() =>
@@ -136,7 +136,7 @@ public static class ResultTest
             .Match(
                 onError: e => (e, DummyResultValue),
                 onOk: v => (DummyErrorValue, v))
-            .Should().Be((42, DummyResultValue));
+            .ShouldBe((42, DummyResultValue));
 
     [Test]
     public static async Task BindAsync_Ok() =>
@@ -145,7 +145,7 @@ public static class ResultTest
             .Pipe(r => r.Match(
                 onError: e => (e, DummyResultValue),
                 onOk: v => (DummyErrorValue, v))))
-        .Should().Be((DummyErrorValue, "resultValueAltered"));
+        .ShouldBe((DummyErrorValue, "resultValueAltered"));
 
     [Test]
     public static async Task BindAsync_Error() =>
@@ -154,95 +154,95 @@ public static class ResultTest
             .Pipe(r => r.Match(
                 onError: e => (e, DummyResultValue),
                 onOk: v => (DummyErrorValue, v))))
-        .Should().Be((42, DummyResultValue));
+        .ShouldBe((42, DummyResultValue));
 
     [Test]
-    public static void Contains_Ok_Matching() => Result.Ok<string, int>("value").Contains("value").Should().BeTrue();
+    public static void Contains_Ok_Matching() => Result.Ok<string, int>("value").Contains("value").ShouldBeTrue();
 
     [Test]
-    public static void Contains_Ok_NotMatching() => Result.Ok<string, int>("value").Contains("anotherValue").Should().BeFalse();
+    public static void Contains_Ok_NotMatching() => Result.Ok<string, int>("value").Contains("anotherValue").ShouldBeFalse();
 
     [Test]
-    public static void Contains_Error() => Result.Error<string, int>(42).Contains("value").Should().BeFalse();
+    public static void Contains_Error() => Result.Error<string, int>(42).Contains("value").ShouldBeFalse();
 
     [Test]
-    public static void Count_Ok() => Result.Ok<string, int>(GoodResultValue).Count().Should().Be(1);
+    public static void Count_Ok() => Result.Ok<string, int>(GoodResultValue).Count().ShouldBe(1);
 
     [Test]
-    public static void Count_Error() => Result.Error<string, int>(42).Count().Should().Be(0);
+    public static void Count_Error() => Result.Error<string, int>(42).Count().ShouldBe(0);
 
     [Test]
-    public static void DefaultValue_Ok() => Result.Ok<string, int>("value").DefaultValue("defaultValue").Should().Be("value");
+    public static void DefaultValue_Ok() => Result.Ok<string, int>("value").DefaultValue("defaultValue").ShouldBe("value");
 
     [Test]
-    public static void DefaultValue_Error() => Result.Error<string, int>(42).DefaultValue("defaultValue").Should().Be("defaultValue");
+    public static void DefaultValue_Error() => Result.Error<string, int>(42).DefaultValue("defaultValue").ShouldBe("defaultValue");
 
     [Test]
-    public static void DefaultWith_Ok() => Result.Ok<string, int>("value").DefaultWith(e => $"defaultValue{e}").Should().Be("value");
+    public static void DefaultWith_Ok() => Result.Ok<string, int>("value").DefaultWith(e => $"defaultValue{e}").ShouldBe("value");
 
     [Test]
-    public static void DefaultWith_Error() => Result.Error<string, int>(42).DefaultWith(e => $"defaultValue{e}").Should().Be("defaultValue42");
+    public static void DefaultWith_Error() => Result.Error<string, int>(42).DefaultWith(e => $"defaultValue{e}").ShouldBe("defaultValue42");
 
     [Test]
-    public static async Task DefaultWithAsync_Ok() => (await Result.Ok<string, int>("value").DefaultWithAsync(e => Task.FromResult($"defaultValue{e}"))).Should().Be("value");
+    public static async Task DefaultWithAsync_Ok() => (await Result.Ok<string, int>("value").DefaultWithAsync(e => Task.FromResult($"defaultValue{e}"))).ShouldBe("value");
 
     [Test]
-    public static async Task DefaultWithAsync_Error() => (await Result.Error<string, int>(42).DefaultWithAsync(e => Task.FromResult($"defaultValue{e}"))).Should().Be("defaultValue42");
+    public static async Task DefaultWithAsync_Error() => (await Result.Error<string, int>(42).DefaultWithAsync(e => Task.FromResult($"defaultValue{e}"))).ShouldBe("defaultValue42");
 
     [Test]
-    public static void Exists_Ok_Matching() => Result.Ok<string, int>("value").Exists(v => v == "value").Should().BeTrue();
+    public static void Exists_Ok_Matching() => Result.Ok<string, int>("value").Exists(v => v == "value").ShouldBeTrue();
 
     [Test]
-    public static void Exists_Ok_NotMatching() => Result.Ok<string, int>("value").Exists(v => v == "anotherValue").Should().BeFalse();
+    public static void Exists_Ok_NotMatching() => Result.Ok<string, int>("value").Exists(v => v == "anotherValue").ShouldBeFalse();
 
     [Test]
-    public static void Exists_Error() => Result.Error<string, int>(42).Exists(v => v == "value").Should().BeFalse();
+    public static void Exists_Error() => Result.Error<string, int>(42).Exists(v => v == "value").ShouldBeFalse();
 
     [Test]
-    public static void Get_Ok() => Result.Ok<string, int>(GoodResultValue).Get().Should().Be(GoodResultValue);
+    public static void Get_Ok() => Result.Ok<string, int>(GoodResultValue).Get().ShouldBe(GoodResultValue);
 
     [Test]
-    public static void Get_Error() => ((Func<string>)(() => Result.Error<string, int>(GoodErrorValue).Get())).Should().Throw<InvalidOperationException>();
+    public static void Get_Error() => Should.Throw<InvalidOperationException>(() => Result.Error<string, int>(GoodErrorValue).Get());
 
     [Test]
-    public static void GetError_Ok() => ((Func<int>)(() => Result.Ok<string, int>(GoodResultValue).GetError())).Should().Throw<InvalidOperationException>();
+    public static void GetError_Ok() => Should.Throw<InvalidOperationException>(() => Result.Ok<string, int>(GoodResultValue).GetError());
 
     [Test]
-    public static void GetError_Error() => Result.Error<string, int>(GoodErrorValue).GetError().Should().Be(GoodErrorValue);
+    public static void GetError_Error() => Result.Error<string, int>(GoodErrorValue).GetError().ShouldBe(GoodErrorValue);
 
     [Test]
-    public static void Fold_Ok() => Result.Ok<int, string>(1).Fold(10, (acc, v) => acc + v * 2).Should().Be(12);
+    public static void Fold_Ok() => Result.Ok<int, string>(1).Fold(10, (acc, v) => acc + v * 2).ShouldBe(12);
 
     [Test]
-    public static void Fold_Error() => Result.Error<int, string>("error").Fold(10, (acc, v) => acc + v * 2).Should().Be(10);
+    public static void Fold_Error() => Result.Error<int, string>("error").Fold(10, (acc, v) => acc + v * 2).ShouldBe(10);
 
     [Test]
-    public static void ForAll_Ok_Matching() => Result.Ok<int, string>(42).ForAll(v => v >= 5).Should().BeTrue();
+    public static void ForAll_Ok_Matching() => Result.Ok<int, string>(42).ForAll(v => v >= 5).ShouldBeTrue();
 
     [Test]
-    public static void ForAll_Ok_NotMatching() => Result.Ok<int, string>(4).ForAll(v => v >= 5).Should().BeFalse();
+    public static void ForAll_Ok_NotMatching() => Result.Ok<int, string>(4).ForAll(v => v >= 5).ShouldBeFalse();
 
     [Test]
-    public static void ForAll_Error() => Result.Error<int, string>("error").ForAll(v => v >= 5).Should().BeTrue();
+    public static void ForAll_Error() => Result.Error<int, string>("error").ForAll(v => v >= 5).ShouldBeTrue();
 
     [Test]
-    public static void IsOk_Ok() => Result.Ok<string, int>(GoodResultValue).IsOk().Should().BeTrue();
+    public static void IsOk_Ok() => Result.Ok<string, int>(GoodResultValue).IsOk().ShouldBeTrue();
 
     [Test]
-    public static void IsOk_Error() => Result.Error<string, int>(GoodErrorValue).IsOk().Should().BeFalse();
+    public static void IsOk_Error() => Result.Error<string, int>(GoodErrorValue).IsOk().ShouldBeFalse();
 
     [Test]
-    public static void IsError_Ok() => Result.Ok<string, int>(GoodResultValue).IsError().Should().BeFalse();
+    public static void IsError_Ok() => Result.Ok<string, int>(GoodResultValue).IsError().ShouldBeFalse();
 
     [Test]
-    public static void IsError_Error() => Result.Error<string, int>(GoodErrorValue).IsError().Should().BeTrue();
+    public static void IsError_Error() => Result.Error<string, int>(GoodErrorValue).IsError().ShouldBeTrue();
 
     [Test]
     public static void Iter_Ok()
     {
         string? found = null;
         Result.Ok<string, int>("resultValue").Iter(v => found = v);
-        found.Should().Be("resultValue");
+        found.ShouldBe("resultValue");
     }
 
     [Test]
@@ -250,7 +250,7 @@ public static class ResultTest
     {
         string? found = null;
         Result.Error<string, int>(42).Iter(v => found = v);
-        found.Should().BeNull();
+        found.ShouldBeNull();
     }
 
     [Test]
@@ -262,7 +262,7 @@ public static class ResultTest
             found = v;
             return Task.CompletedTask;
         });
-        found.Should().Be("resultValue");
+        found.ShouldBe("resultValue");
     }
 
     [Test]
@@ -274,7 +274,7 @@ public static class ResultTest
             found = v;
             return Task.CompletedTask;
         });
-        found.Should().BeNull();
+        found.ShouldBeNull();
     }
 
     [Test]
@@ -282,7 +282,7 @@ public static class ResultTest
     {
         int? found = null;
         Result.Ok<string, int>("resultValue").IterError(v => found = v);
-        found.Should().BeNull();
+        found.ShouldBeNull();
     }
 
     [Test]
@@ -290,7 +290,7 @@ public static class ResultTest
     {
         int? found = null;
         Result.Error<string, int>(42).IterError(v => found = v);
-        found.Should().Be(42);
+        found.ShouldBe(42);
     }
 
     [Test]
@@ -302,7 +302,7 @@ public static class ResultTest
             found = v;
             return Task.CompletedTask;
         });
-        found.Should().BeNull();
+        found.ShouldBeNull();
     }
 
     [Test]
@@ -314,7 +314,7 @@ public static class ResultTest
             found = v;
             return Task.CompletedTask;
         });
-        found.Should().Be(42);
+        found.ShouldBe(42);
     }
 
     [Test]
@@ -324,7 +324,7 @@ public static class ResultTest
             .Match(
                 onError: e => (e, DummyResultValue),
                 onOk: v => (DummyErrorValue, v))
-            .Should().Be((DummyErrorValue, "resultValueAltered"));
+            .ShouldBe((DummyErrorValue, "resultValueAltered"));
 
     [Test]
     public static void Map_Error() =>
@@ -333,7 +333,7 @@ public static class ResultTest
             .Match(
                 onError: e => (e, DummyResultValue),
                 onOk: v => (DummyErrorValue, v))
-            .Should().Be((42, DummyResultValue));
+            .ShouldBe((42, DummyResultValue));
 
     [Test]
     public static async Task MapAsync_Ok() =>
@@ -342,7 +342,7 @@ public static class ResultTest
             .Pipe(r => r.Match(
                 onError: e => (e, DummyResultValue),
                 onOk: v => (DummyErrorValue, v))))
-        .Should().Be((DummyErrorValue, "resultValueAltered"));
+        .ShouldBe((DummyErrorValue, "resultValueAltered"));
 
     [Test]
     public static async Task MapAsync_Error() =>
@@ -351,7 +351,7 @@ public static class ResultTest
             .Pipe(r => r.Match(
                 onError: e => (e, DummyResultValue),
                 onOk: v => (DummyErrorValue, v))))
-        .Should().Be((42, DummyResultValue));
+        .ShouldBe((42, DummyResultValue));
 
     [Test]
     public static void MapError_Ok() =>
@@ -360,7 +360,7 @@ public static class ResultTest
             .Match(
                 onError: e => (e, DummyResultValue),
                 onOk: v => (DummyErrorValue, v))
-            .Should().Be((DummyErrorValue, "resultValue"));
+            .ShouldBe((DummyErrorValue, "resultValue"));
 
     [Test]
     public static void MapError_Error() =>
@@ -369,7 +369,7 @@ public static class ResultTest
             .Match(
                 onError: e => (e, DummyResultValue),
                 onOk: v => (DummyErrorValue, v))
-            .Should().Be((43, DummyResultValue));
+            .ShouldBe((43, DummyResultValue));
 
     [Test]
     public static async Task MapErrorAsync_Ok() =>
@@ -378,7 +378,7 @@ public static class ResultTest
             .Pipe(r => r.Match(
                 onError: e => (e, DummyResultValue),
                 onOk: v => (DummyErrorValue, v))))
-        .Should().Be((DummyErrorValue, "resultValue"));
+        .ShouldBe((DummyErrorValue, "resultValue"));
 
     [Test]
     public static async Task MapErrorAsync_Error() =>
@@ -387,84 +387,84 @@ public static class ResultTest
             .Pipe(r => r.Match(
                 onError: e => (e, DummyResultValue),
                 onOk: v => (DummyErrorValue, v))))
-        .Should().Be((43, DummyResultValue));
+        .ShouldBe((43, DummyResultValue));
 
     [Test]
-    public static void ToArray_Ok() => Result.Ok<int, string>(42).ToArray().Should().BeEquivalentTo(new[] { 42 });
+    public static void ToArray_Ok() => Result.Ok<int, string>(42).ToArray().ShouldBe(new[] { 42 });
 
     [Test]
-    public static void ToArray_Error() => Result.Error<int, string>("error").ToArray().Should().BeEquivalentTo(Array.Empty<int>());
+    public static void ToArray_Error() => Result.Error<int, string>("error").ToArray().ShouldBe(Array.Empty<int>());
 
     [Test]
-    public static void ToEnumerable_Ok() => Result.Ok<int, string>(42).ToEnumerable().Should().BeEquivalentTo(new[] { 42 });
+    public static void ToEnumerable_Ok() => Result.Ok<int, string>(42).ToEnumerable().ShouldBe(new[] { 42 });
 
     [Test]
-    public static void ToEnumerable_Error() => Result.Error<int, string>("error").ToEnumerable().Should().BeEquivalentTo(Array.Empty<int>());
+    public static void ToEnumerable_Error() => Result.Error<int, string>("error").ToEnumerable().ShouldBe(Array.Empty<int>());
 
     [Test]
-    public static void ToOption_Ok() => Result.Ok<string, int>(GoodResultValue).ToOption().Should().Be(Option.Some(GoodResultValue));
+    public static void ToOption_Ok() => Result.Ok<string, int>(GoodResultValue).ToOption().ShouldBe(Option.Some(GoodResultValue));
 
     [Test]
-    public static void ToOption_Error() => Result.Error<string, int>(GoodErrorValue).ToOption().Should().Be(Option.None<string>());
+    public static void ToOption_Error() => Result.Error<string, int>(GoodErrorValue).ToOption().ShouldBe(Option.None<string>());
 
     [Test]
-    public static void ToOptionError_Ok() => Result.Ok<string, int>(GoodResultValue).ToOptionError().Should().Be(Option.None<int>());
+    public static void ToOptionError_Ok() => Result.Ok<string, int>(GoodResultValue).ToOptionError().ShouldBe(Option.None<int>());
 
     [Test]
-    public static void ToOptionError_Error() => Result.Error<string, int>(GoodErrorValue).ToOptionError().Should().Be(Option.Some(GoodErrorValue));
+    public static void ToOptionError_Error() => Result.Error<string, int>(GoodErrorValue).ToOptionError().ShouldBe(Option.Some(GoodErrorValue));
 
     [Test]
     public static void TryGet_ValueType_Ok()
     {
-        Result.Ok<int, string>(42).TryGet(out var value).Should().BeTrue();
-        value.Should().Be(42);
+        Result.Ok<int, string>(42).TryGet(out var value).ShouldBeTrue();
+        value.ShouldBe(42);
     }
 
     [Test]
     public static void TryGet_ValueType_Error()
     {
-        Result.Error<int, string>("error").TryGet(out var value).Should().BeFalse();
-        value.Should().BeNull();
+        Result.Error<int, string>("error").TryGet(out var value).ShouldBeFalse();
+        value.ShouldBeNull();
     }
 
     [Test]
     public static void TryGet_ReferenceType_Ok()
     {
-        Result.Ok<string, int>("value").TryGet(out var value).Should().BeTrue();
-        value.Should().Be("value");
+        Result.Ok<string, int>("value").TryGet(out var value).ShouldBeTrue();
+        value.ShouldBe("value");
     }
 
     [Test]
     public static void TryGet_ReferenceType_Error()
     {
-        Result.Error<string, int>(42).TryGet(out var value).Should().BeFalse();
-        value.Should().BeNull();
+        Result.Error<string, int>(42).TryGet(out var value).ShouldBeFalse();
+        value.ShouldBeNull();
     }
     [Test]
     public static void TryGetError_ValueType_Ok()
     {
-        Result.Ok<string, int>("value").TryGetError(out var value).Should().BeFalse();
-        value.Should().BeNull();
+        Result.Ok<string, int>("value").TryGetError(out var value).ShouldBeFalse();
+        value.ShouldBeNull();
     }
 
     [Test]
     public static void TryGetError_ValueType_Error()
     {
-        Result.Error<string, int>(42).TryGetError(out var value).Should().BeTrue();
-        value.Should().Be(42);
+        Result.Error<string, int>(42).TryGetError(out var value).ShouldBeTrue();
+        value.ShouldBe(42);
     }
 
     [Test]
     public static void TryGetError_ReferenceType_Ok()
     {
-        Result.Ok<int, string>(42).TryGetError(out var value).Should().BeFalse();
-        value.Should().BeNull();
+        Result.Ok<int, string>(42).TryGetError(out var value).ShouldBeFalse();
+        value.ShouldBeNull();
     }
 
     [Test]
     public static void TryGetError_ReferenceType_Error()
     {
-        Result.Error<int, string>("error").TryGetError(out var value).Should().BeTrue();
-        value.Should().Be("error");
+        Result.Error<int, string>("error").TryGetError(out var value).ShouldBeTrue();
+        value.ShouldBe("error");
     }
 }

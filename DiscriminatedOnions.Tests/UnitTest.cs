@@ -24,8 +24,8 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-using FluentAssertions;
 using NUnit.Framework;
+using Shouldly;
 
 namespace DiscriminatedOnions.Tests;
 
@@ -33,13 +33,13 @@ namespace DiscriminatedOnions.Tests;
 public static class UnitTest
 {
     [Test]
-    public static void Value() => Option.Some(42).Match(onNone: () => Unit.Value, onSome: _ => Unit.Value).Should().BeNull();
+    public static void Value() => Option.Some(42).Match(onNone: () => Unit.Value, onSome: _ => Unit.Value).ShouldBeNull();
 
     [Test]
     public static void Call()
     {
         var called = false;
-        Unit.Call(() => called = true).Should().Be(Unit.Value);
-        called.Should().BeTrue();
+        Unit.Call(() => called = true).ShouldBe(Unit.Value);
+        called.ShouldBeTrue();
     }
 }

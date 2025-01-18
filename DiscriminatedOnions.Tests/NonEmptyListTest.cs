@@ -26,8 +26,8 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 using System;
-using FluentAssertions;
 using NUnit.Framework;
+using Shouldly;
 
 namespace DiscriminatedOnions.Tests;
 
@@ -37,29 +37,28 @@ public static class NonEmptyListTest
     [Test]
     public static void TryCreateNonEmptyList_Empty() =>
         Array.Empty<int>().TryCreateNonEmptyList()
-            .Should().Be(Option.None<INonEmptyList<int>>());
+            .ShouldBe(Option.None<INonEmptyList<int>>());
 
     [Test]
     public static void TryCreateNonEmptyList_NonEmpty() =>
         new[] { 1, 2 }.TryCreateNonEmptyList()
-            .Should().BeAssignableTo<Option<INonEmptyList<int>>>().And.BeEquivalentTo(Option.Some(new[] { 1, 2 }), o => o.WithStrictOrdering());
+            .ShouldSatisfyAllConditions(
+                o => o.ShouldBeAssignableTo<Option<INonEmptyList<int>>>(),
+                o => o.Get().ShouldBe(new[] { 1, 2 }));
 
     [Test]
     public static void Count() =>
         NonEmptyEnumerable.Of(1, 2, 3).ToNonEmptyList().Count
-            .Should().Be(3);
+            .ShouldBe(3);
 
     [TestCase(0, 'a')]
     [TestCase(1, 'b')]
     [TestCase(2, 'c')]
     public static void Index(int index, char expected) =>
         NonEmptyEnumerable.Of('a', 'b', 'c').ToNonEmptyList()[index]
-            .Should().Be(expected);
+            .ShouldBe(expected);
 
     [Test]
-    public static void Index_OutOfBound()
-    {
-        var act = () => NonEmptyEnumerable.Of('a', 'b', 'c').ToNonEmptyList()[4];
-        act.Should().Throw<ArgumentOutOfRangeException>();
-    }
+    public static void Index_OutOfBound() =>
+        Should.Throw<ArgumentOutOfRangeException>(() => NonEmptyEnumerable.Of('a', 'b', 'c').ToNonEmptyList()[4]);
 }

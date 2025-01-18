@@ -25,8 +25,8 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 using System;
-using FluentAssertions;
 using NUnit.Framework;
+using Shouldly;
 
 namespace DiscriminatedOnions.Tests;
 
@@ -36,15 +36,17 @@ public static class NonEmptyCollectionTest
     [Test]
     public static void TryCreateNonEmptyCollection_Empty() =>
         Array.Empty<int>().TryCreateNonEmptyCollection()
-            .Should().Be(Option.None<INonEmptyCollection<int>>());
+            .ShouldBe(Option.None<INonEmptyCollection<int>>());
 
     [Test]
     public static void TryCreateNonEmptyCollection_NonEmpty() =>
         new[] { 1, 2 }.TryCreateNonEmptyCollection()
-            .Should().BeAssignableTo<Option<INonEmptyCollection<int>>>().And.BeEquivalentTo(Option.Some(new[] { 1, 2 }), o => o.WithStrictOrdering());
+            .ShouldSatisfyAllConditions(
+                o => o.ShouldBeAssignableTo<Option<INonEmptyCollection<int>>>(),
+                o => o.Get().ShouldBe(new[] { 1, 2 }));
 
     [Test]
     public static void Count() =>
         NonEmptyEnumerable.Of(1, 2, 3).ToNonEmptyCollection().Count
-            .Should().Be(3);
+            .ShouldBe(3);
 }

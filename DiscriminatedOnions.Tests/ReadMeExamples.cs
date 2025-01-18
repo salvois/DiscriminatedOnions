@@ -27,8 +27,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using FluentAssertions;
 using NUnit.Framework;
+using Shouldly;
 
 namespace DiscriminatedOnions.Tests;
 
@@ -65,23 +65,23 @@ public static class ReadMeExamples
             onCircle: c => c.Radius * c.Radius * Math.PI);
 
     [Test]
-    public static void SwitchRectangle() => new Shape.Rectangle(10.0, 1.3).ComputeAreaUsingSwitch().Should().Be(10.0 * 1.3);
+    public static void SwitchRectangle() => new Shape.Rectangle(10.0, 1.3).ComputeAreaUsingSwitch().ShouldBe(10.0 * 1.3);
 
     [Test]
-    public static void SwitchCircle() => new Shape.Circle(1.0).ComputeAreaUsingSwitch().Should().Be(1.0 * 1.0 * Math.PI);
+    public static void SwitchCircle() => new Shape.Circle(1.0).ComputeAreaUsingSwitch().ShouldBe(1.0 * 1.0 * Math.PI);
 
     [Test]
-    public static void MatchRectangle() => new Shape.Rectangle(10.0, 1.3).ComputeAreaUsingMatch().Should().Be(10.0 * 1.3);
+    public static void MatchRectangle() => new Shape.Rectangle(10.0, 1.3).ComputeAreaUsingMatch().ShouldBe(10.0 * 1.3);
 
     [Test]
-    public static void MatchCircle() => new Shape.Circle(1.0).ComputeAreaUsingMatch().Should().Be(1.0 * 1.0 * Math.PI);
+    public static void MatchCircle() => new Shape.Circle(1.0).ComputeAreaUsingMatch().ShouldBe(1.0 * 1.0 * Math.PI);
 
     [Test]
     public static void Option_Map_Some()
     {
         Option<string> someString = Option.Some("I have a value");
         Option<string> mapped = someString.Map(v => v + " today");
-        mapped.Should().Be(Option.Some("I have a value today"));
+        mapped.ShouldBe(Option.Some("I have a value today"));
     }
 
     [Test]
@@ -89,7 +89,7 @@ public static class ReadMeExamples
     {
         Option<string> noString = Option.None<string>();
         string defaulted = noString.DefaultValue("default value");
-        defaulted.Should().Be("default value");
+        defaulted.ShouldBe("default value");
     }
 
     [Test]
@@ -97,7 +97,7 @@ public static class ReadMeExamples
     {
         Option<string> noString = Option.Nothing;
         string defaulted = noString.DefaultValue("default value");
-        defaulted.Should().Be("default value");
+        defaulted.ShouldBe("default value");
     }
 
     [Test]
@@ -107,7 +107,7 @@ public static class ReadMeExamples
         Option<string> asyncBound = await someString
             .BindAsync(v => Task.FromResult(Option.Some(v + " altered")))
             .Pipe(o => o.BindAsync(v => Task.FromResult(Option.Some(v + " two times"))));
-        asyncBound.Should().Be(Option.Some("I have a value altered two times"));
+        asyncBound.ShouldBe(Option.Some("I have a value altered two times"));
     }
 
     [Test]
@@ -117,14 +117,14 @@ public static class ReadMeExamples
             i => i % 2 == 0
                 ? Option.Some(i)
                 : Option.None<int>());
-        chosen.Should().BeEquivalentTo(new[] { 2, 4 });
+        chosen.ShouldBe(new[] { 2, 4 });
     }
 
     [Test]
     public static void Option_TryFind()
     {
         Option<int> found = new[] { 1, 2, 3, 4, 5 }.TryFind(i => i % 2 == 0);
-        found.Should().Be(Option.Some(2));
+        found.ShouldBe(Option.Some(2));
     }
 
     [Test]
@@ -132,7 +132,7 @@ public static class ReadMeExamples
     {
         var dict = new Dictionary<int, string> { [42] = "The answer" };
         Option<string> value = dict.TryGetValue(42);
-        value.Should().Be(Option.Some("The answer"));
+        value.ShouldBe(Option.Some("The answer"));
     }
 
     [Test]
@@ -140,7 +140,7 @@ public static class ReadMeExamples
     {
         Result<string, int> ok = Result.Ok<string, int>("result value");
         Result<string, int> boundOk = ok.Bind(v => Result.Ok<string, int>("beautiful " + v));
-        boundOk.Should().Be(Result.Ok<string, int>("beautiful result value"));
+        boundOk.ShouldBe(Result.Ok<string, int>("beautiful result value"));
     }
 
     [Test]
@@ -148,7 +148,7 @@ public static class ReadMeExamples
     {
         Result<string, int> error = Result.Error<string, int>(42);
         Result<string, int> boundError = error.Bind(v => Result.Ok<string, int>("beautiful " + v));
-        boundError.Should().Be(Result.Error<string, int>(42));
+        boundError.ShouldBe(Result.Error<string, int>(42));
     }
 
     [Test]
@@ -156,7 +156,7 @@ public static class ReadMeExamples
     {
         Result<string, int> ok = Result.Ok("result value");
         Result<string, int> boundOk = ok.Bind(v => Result.Ok<string, int>("beautiful " + v));
-        boundOk.Should().Be(Result.Ok<string, int>("beautiful result value"));
+        boundOk.ShouldBe(Result.Ok<string, int>("beautiful result value"));
     }
 
     [Test]
@@ -164,7 +164,7 @@ public static class ReadMeExamples
     {
         Result<string, int> error = Result.Error(42);
         Result<string, int> boundError = error.Bind(v => Result.Ok<string, int>("beautiful " + v));
-        boundError.Should().Be(Result.Error<string, int>(42));
+        boundError.ShouldBe(Result.Error<string, int>(42));
     }
 
     [Test]
@@ -174,7 +174,7 @@ public static class ReadMeExamples
         Result<string, int> asyncBoundOk = await ok
             .BindAsync(v => Task.FromResult(Result.Ok<string, int>("beautiful " + v)))
             .Pipe(o => o.BindAsync(v => Task.FromResult(Result.Ok<string, int>("very " + v))));
-        asyncBoundOk.Should().Be(Result.Ok<string, int>("very beautiful result value"));
+        asyncBoundOk.ShouldBe(Result.Ok<string, int>("very beautiful result value"));
     }
 
     [Test]
@@ -182,7 +182,7 @@ public static class ReadMeExamples
     {
         const int twenty = 20;
         int piped = twenty.Pipe(v => v + 1).Pipe(v => v * 2);
-        piped.Should().Be(42);
+        piped.ShouldBe(42);
     }
 
     [Test]
@@ -190,7 +190,7 @@ public static class ReadMeExamples
     {
         const int twenty = 20;
         int maybePiped = twenty.PipeIf(v => v < 10, v => v * 2);
-        maybePiped.Should().Be(20);
+        maybePiped.ShouldBe(20);
     }
 
     [Test]
@@ -207,7 +207,7 @@ public static class ReadMeExamples
                     Console.WriteLine($"Circle with radius {c.Radius}.");
                     return Unit.Value;
                 })
-            .Should().Be(Unit.Value);
+            .ShouldBe(Unit.Value);
     }
 
     [Test]
@@ -216,6 +216,6 @@ public static class ReadMeExamples
         new Shape.Circle(1.0).Match(
                 onRectangle: r => Unit.Call(() => Console.WriteLine($"Rectangle with width {r.Width} and height {r.Height}.")),
                 onCircle: c => Unit.Call(() => Console.WriteLine($"Circle with radius {c.Radius}.")))
-            .Should().Be(Unit.Value);
+            .ShouldBe(Unit.Value);
     }
 }
