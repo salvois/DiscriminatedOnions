@@ -2,7 +2,7 @@
 
 [![NuGet](https://img.shields.io/nuget/v/DiscriminatedOnions.svg)](https://www.nuget.org/packages/DiscriminatedOnions)
 
-Welcome to this hacky, tiny and hopefully useful .NET 6 library that aims to bring some discriminated unions to C#, together with a bunch of techniques to roll your own ones.
+Welcome to this hacky, tiny and hopefully useful library, for .NET 6 and later, that aims to bring some discriminated unions to C#, together with a bunch of techniques to roll your own ones.
 
 This is heavily inspired (as in "shamelessly copied") from F# discriminated union types and standard library, so you will find types and utility functions for `Option`s, `Result`s and `Choice`s, as well as poor man's `unit` type and `|>` (pipe) operator.
 
@@ -700,7 +700,7 @@ Permissive, [2-clause BSD style](https://opensource.org/licenses/BSD-2-Clause)
 
 DiscriminatedOnions - A stinky but tasty hack to emulate F#-like discriminated unions in C#
 
-Copyright 2022-2024 Salvatore ISAJA. All rights reserved.
+Copyright 2022-2025 Salvatore ISAJA. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
 
